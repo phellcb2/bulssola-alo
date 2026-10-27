@@ -72,6 +72,39 @@ td.num{font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}th.
 .row.out{color:var(--muted)}
 .tag{font:500 10px var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:1px 6px;border-radius:4px;background:var(--alo);color:#fff;margin-left:6px;white-space:nowrap}
 .dev{display:block;color:var(--muted);font-size:12px}
+
+/* m² por estágio */
+.m2{margin-top:16px}
+.m2t th,.m2t td{padding:5px 6px;font-size:12.5px}
+.m2t td small{color:var(--muted);font-size:11px}
+.tiny{font-size:12px;color:var(--muted);margin:6px 0 0}
+/* blocos largos */
+.wide{margin-top:20px}
+.cmpgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:16px}
+.cmp{border:1px solid var(--line);border-radius:12px;padding:16px;min-width:0;border-top:4px solid var(--alo)}
+.cmp h3{font:700 18px var(--display);margin:0}
+.cmp .dev{margin-bottom:10px}
+.pill{display:inline-block;font:600 11px var(--mono);padding:2px 7px;border-radius:99px;white-space:nowrap}
+.p-good{background:color-mix(in srgb,var(--av) 16%,transparent);color:var(--av)}
+.p-bad{background:color-mix(in srgb,var(--alo) 14%,transparent);color:var(--alo)}
+.arg{margin:12px 0 0;font-size:13.5px;background:var(--bg);border-radius:8px;padding:10px 12px}
+.sub2{font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:14px 0 4px}
+/* direcionador */
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:6px}
+.f{display:flex;flex-direction:column;gap:4px;min-width:0}
+.f label{font-size:12.5px;font-weight:600}
+.f input,.f select,.f textarea{font:inherit;font-size:14px;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%}
+.f textarea{min-height:64px;resize:vertical}
+.f.span2{grid-column:span 2}@media (max-width:480px){.f.span2{grid-column:auto}}
+.f input:focus-visible,.f select:focus-visible,.f textarea:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
+.chk{flex-direction:row;align-items:center;gap:8px;padding-top:22px}.chk input{width:auto}
+.budget{margin:16px 0 4px;display:flex;flex-wrap:wrap;gap:8px 18px;font-size:13.5px}
+.budget b{font-family:var(--display)}
+.outs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:14px;margin-top:14px}
+.outs textarea{width:100%;min-height:150px;font:13px/1.5 var(--body);padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.btn{font:600 13px var(--display);border:1.5px solid var(--ink);background:var(--ink);color:var(--surface);border-radius:8px;padding:8px 14px;cursor:pointer;margin-top:6px}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn:focus-visible{outline:2px solid var(--alo);outline-offset:2px}
 footer{margin-top:28px;font-size:12.5px;color:var(--muted);max-width:90ch}
 footer a{color:inherit}
 </style>
@@ -82,7 +115,7 @@ footer a{color:inherit}
 <div class="wrap">
   <header>
     <div>
-      <p class="asof">Alô Imóveis · Curitiba e RMC · Órulo em 21/10/2026</p>
+      <p class="asof">Alô Imóveis · Curitiba e RMC · Órulo em 27/10/2026</p>
       <h1>Bússola dos Territórios</h1>
       <p class="sub">Onde a Alô vai ser referência: para quem vender, o que vender, a que preço e com qual mensagem, com os empreendimentos que já estão no mercado em cada bairro.</p>
     </div>
@@ -104,8 +137,41 @@ footer a{color:inherit}
     </section>
   </div>
 
+  <section class="panel wide" id="compare" aria-labelledby="cmpTitle">
+    <p class="eyebrow">Comparativo</p><h2 id="cmpTitle">Nossos empreendimentos × mercado</h2>
+    <p class="lead">Piazza di Roma e MUV Residence contra os compactos do mesmo bairro e do mesmo estágio em Curitiba (Órulo).</p>
+    <div class="cmpgrid" id="cmpgrid"></div>
+  </section>
+
+  <section class="panel wide" id="match" aria-labelledby="matchTitle">
+    <p class="eyebrow">Atendimento</p><h2 id="matchTitle">Direcionar o cliente</h2>
+    <p class="lead">Preencha o que o cliente quer e como quer pagar. A lista ao lado mostra o que cabe, com os empreendimentos da Alô primeiro.</p>
+    <form class="form" id="mform" onsubmit="return false">
+      <div class="f"><label for="m_nome">Cliente</label><input id="m_nome" type="text" placeholder="Nome"></div>
+      <div class="f"><label for="m_corretor">Corretor</label><input id="m_corretor" type="text" placeholder="Seu nome"></div>
+      <div class="f"><label for="m_obj">Objetivo</label><select id="m_obj"><option value="morar">Morar</option><option value="investir">Investir (renda)</option></select></div>
+      <div class="f"><label for="m_tipo">Tipo de imóvel</label><select id="m_tipo"><option value="">Tanto faz</option><option value="compacto">Apartamento compacto (até 60 m²)</option><option value="apto">Apartamento</option><option value="lote">Lote em condomínio</option><option value="casa">Casa</option><option value="comercial">Comercial</option></select></div>
+      <div class="f"><label for="m_bairro">Bairro</label><select id="m_bairro"><option value="">Qualquer bairro</option></select></div>
+      <div class="f"><label for="m_amin">Área de (m²)</label><input id="m_amin" type="number" inputmode="numeric" min="0" placeholder="Ex.: 25"></div>
+      <div class="f"><label for="m_amax">Área até (m²)</label><input id="m_amax" type="number" inputmode="numeric" min="0" placeholder="Ex.: 60"></div>
+      <div class="f"><label for="m_prazo">Quando quer o imóvel</label><select id="m_prazo"><option value="">Tanto faz</option><option value="pronto">Pronto para morar</option><option value="12">Até 12 meses</option><option value="planta">Na planta (pode esperar)</option></select></div>
+      <div class="f"><label for="m_pag">Como quer pagar</label><select id="m_pag"><option value="fin">Financiamento bancário</option><option value="dir">Parcelado com a construtora</option><option value="vista">À vista</option></select></div>
+      <div class="f"><label for="m_vmax">Valor máximo (R$)</label><input id="m_vmax" type="number" inputmode="numeric" min="0" step="1000" placeholder="Ex.: 400000"></div>
+      <div class="f"><label for="m_ent">Entrada disponível (R$)</label><input id="m_ent" type="number" inputmode="numeric" min="0" step="1000" placeholder="Ex.: 80000"></div>
+      <div class="f"><label for="m_renda">Renda familiar (R$/mês)</label><input id="m_renda" type="number" inputmode="numeric" min="0" step="100" placeholder="Opcional"></div>
+      <div class="f chk"><input id="m_fgts" type="checkbox"><label for="m_fgts">Vai usar FGTS</label></div>
+      <div class="f span2"><label for="m_obs">O que mais importa para o cliente</label><textarea id="m_obs" placeholder="Ex.: perto do trabalho no Batel, vaga de garagem, aceita pet"></textarea></div>
+    </form>
+    <div class="budget" id="budget"></div>
+    <div class="list"><table><thead><tr><th>Empreendimento</th><th class="num">Área m²</th><th class="num">A partir de</th><th class="num">R$/m²</th><th>Entrega</th><th class="num" id="thEnt">Entrada 20%</th></tr></thead><tbody id="mrows"></tbody></table></div>
+    <div class="outs">
+      <div><p class="sub2">Mensagem para o cliente</p><textarea id="m_msg" readonly aria-label="Mensagem para o cliente"></textarea><button class="btn" type="button" data-copy="m_msg">Copiar mensagem</button></div>
+      <div><p class="sub2">Ficha para o Jetimob</p><textarea id="m_ficha" readonly aria-label="Ficha do cliente"></textarea><button class="btn" type="button" data-copy="m_ficha">Copiar ficha</button> <button class="btn ghost" type="button" id="m_limpar">Limpar</button></div>
+    </div>
+  </section>
+
   <footer>
-    Fontes: empreendimentos, preços, áreas e estoque da <a href="https://www.orulo.com.br/buildings" target="_blank" rel="noopener">Órulo</a> (consulta em 21/10/2026, só imóveis novos cadastrados por incorporadoras). R$/m² médio de lançamentos por bairro: <a href="https://apto.vc/br/pr/curitiba/agua-verde" target="_blank" rel="noopener">apto.vc Água Verde</a> e <a href="https://apto.vc/br/pr/curitiba/xaxim" target="_blank" rel="noopener">apto.vc Xaxim</a>. Valorização do Água Verde: <a href="https://portas.com.br/noticias_da_loft/os-bairros-onde-ficou-mais-caro-comprar-imovel-em-2025-em-curitiba/" target="_blank" rel="noopener">Loft/Portas</a>. Terrenos em condomínio em Fazenda Rio Grande: <a href="https://imoveis.trovit.com.br/condominio-fechado-terreno-fazenda-rio-grande" target="_blank" rel="noopener">Trovit</a>. O mapa mostra a posição relativa dos empreendimentos, sem ruas; cada ponto abre no Google Maps. A carteira de usados do Jetimob e a localização do MUV entram na próxima versão.
+    Fontes: empreendimentos, preços, áreas e estoque da <a href="https://www.orulo.com.br/buildings" target="_blank" rel="noopener">Órulo</a> (consulta em 27/10/2026, só imóveis cadastrados por incorporadoras; "usado" na Órulo é revenda de incorporadora e é amostra pequena). R$/m² médio de lançamentos por bairro: <a href="https://apto.vc/br/pr/curitiba/agua-verde" target="_blank" rel="noopener">apto.vc Água Verde</a> e <a href="https://apto.vc/br/pr/curitiba/xaxim" target="_blank" rel="noopener">apto.vc Xaxim</a>. Valorização do Água Verde: <a href="https://portas.com.br/noticias_da_loft/os-bairros-onde-ficou-mais-caro-comprar-imovel-em-2025-em-curitiba/" target="_blank" rel="noopener">Loft/Portas</a>. Terrenos em condomínio em Fazenda Rio Grande: <a href="https://imoveis.trovit.com.br/condominio-fechado-terreno-fazenda-rio-grande" target="_blank" rel="noopener">Trovit</a>. O mapa mostra a posição relativa dos empreendimentos, sem ruas; cada ponto abre no Google Maps. O direcionador usa regras simples (banco financia até 80% do imóvel pronto); confirme tabela e condições com a incorporadora antes de passar ao cliente.
   </footer>
 </div>
 
@@ -282,6 +348,89 @@ function right(){
 function render(){tabs();left();right()}
 onlyCut.onchange=()=>{sel=null;right()};document.getElementById("stageF").onchange=()=>{sel=null;right()};
 render();
+
+const M2={av:{lanc:[6,13710],obra:[23,12936],pronto:[14,14480],usado:[0,null],res:[43,13854],com:[2,10034]},
+ xa:{lanc:[1,6055],obra:[1,3264],pronto:[6,6011],usado:[0,null],res:[8,5901],com:[0,null]},
+ fr:{lanc:[1,6315],obra:[2,5974],pronto:[0,null],usado:[0,null],res:[3,6315],com:[1,550]},
+ cw:{lanc:[39,12372],obra:[100,12158],pronto:[46,13506],usado:[2,17227],res:[187,12599],com:[15,16555]}};
+const CITY={lanc:[54,13219],obra:[227,12698],pronto:[199,12500],usado:[8,10640],res:[488,12538],com:[31,13433]};
+const M2L=[["lanc","Lançamento"],["obra","Em obra"],["pronto","Pronto novo"],["usado","Usado*"],["res","Residencial"],["com","Comercial"]];
+const k$=v=>v==null?"—":"R$ "+(v/1000).toFixed(1).replace(".",",")+" mil";
+function m2block(){const t=M2[cur];const lab=cur==="cw"?"Compactos":"Território";
+ return `<div class="m2"><p class="eyebrow">R$/m² mediano · Órulo</p><div class="list" style="margin-top:0"><table class="m2t"><thead><tr><th></th><th class="num">${lab}</th><th class="num">Curitiba toda</th></tr></thead><tbody>${M2L.map(([k,n])=>`<tr><td>${n}</td><td class="num">${k$(t[k][1])} <small>(${t[k][0]})</small></td><td class="num">${k$(CITY[k][1])} <small>(${CITY[k][0]})</small></td></tr>`).join("")}</tbody></table></div><p class="tiny">Entre parênteses, quantos empreendimentos entram na conta. Estágios contam só residenciais. *Usado na Órulo é revenda cadastrada por incorporadora, amostra pequena; para usado de rua, comparar com FipeZap e portais.</p></div>`}
+const _left=left;left=function(){_left();document.getElementById("left").insertAdjacentHTML("beforeend",m2block())};
+const medv=a=>{a=a.filter(x=>x!=null&&x>0).sort((x,y)=>x-y);if(!a.length)return null;const m=a.length>>1;return a.length%2?a[m]:(a[m-1]+a[m])/2};
+const dist=(a,b)=>{const R=6371,dl=(b.lat-a.lat)*Math.PI/180,dg=(b.lng-a.lng)*Math.PI/180;const h=Math.sin(dl/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dg/2)**2;return 2*R*Math.asin(Math.sqrt(h))};
+const pct=(a,b)=>a==null||b==null?null:Math.round((a/b-1)*100);
+const pill=(d,lowGood=true)=>d==null?"":`<span class="pill ${(d<=0)===lowGood?"p-good":"p-bad"}">${d>0?"+":""}${d}%</span>`;
+const stLab=s=>s==="Pronto novo"?"prontos":s==="Lançamento"?"em lançamento":"em obra";
+function compare(){const box=document.getElementById("cmpgrid");const C=P.cw;
+ box.innerHTML=C.filter(b=>b.alo).map(x=>{
+  const others=C.filter(b=>!b.alo);
+  const bai=others.filter(b=>b.bairro===x.bairro), st=others.filter(b=>b.stage===x.stage);
+  const mB=medv(bai.map(b=>b.m2)),mS=medv(st.map(b=>b.m2)),pB=medv(bai.map(b=>b.price)),pS=medv(st.map(b=>b.price)),aS=medv(st.map(b=>b.minA));
+  const sorted=[...st.filter(b=>b.m2),x].sort((a,b)=>a.m2-b.m2);const rank=sorted.indexOf(x)+1;
+  const sold=x.units?Math.round((x.units-x.stock)/x.units*100):null;
+  const near=others.map(b=>({b,d:dist(x,b)})).sort((a,b)=>a.d-b.d).slice(0,5);
+  const dS=pct(x.m2,mS);
+  const arg=dS<=0?`R$/m² ${Math.abs(dS)}% abaixo da mediana dos compactos ${stLab(x.stage)} de Curitiba: é o ${rank}º mais barato por m² entre ${sorted.length}. Argumento de preço.`
+   :`R$/m² ${dS}% acima da mediana dos compactos ${stLab(x.stage)} de Curitiba (${rank}º de ${sorted.length}). Defender com localização, ${x.deliv==="Pronto"?"imóvel pronto para gerar renda já":"condição de pagamento na planta"} e acabamento.`;
+  return `<article class="cmp"><h3>${x.n}<span class="tag">Alô</span></h3><span class="dev">${x.bairro} · ${x.stage} · entrega ${x.deliv} · ${fmt(x.minA)} a ${fmt(x.maxA)} m²${sold!=null?` · ${sold}% vendido`:""}</span>
+  <div class="list" style="margin-top:4px"><table><thead><tr><th></th><th class="num">${x.n.split(" ")[0]}</th><th class="num">${x.bairro}</th><th class="num">Curitiba ${stLab(x.stage)}</th></tr></thead><tbody>
+  <tr><td>R$/m²</td><td class="num">${fmt(x.m2)}</td><td class="num">${mB?fmt(mB):"—"} ${pill(pct(x.m2,mB))}</td><td class="num">${mS?fmt(mS):"—"} ${pill(dS)}</td></tr>
+  <tr><td>Entrada a partir de</td><td class="num">${brl(x.price)}</td><td class="num">${brl(pB)} ${pill(pct(x.price,pB))}</td><td class="num">${brl(pS)} ${pill(pct(x.price,pS))}</td></tr>
+  <tr><td>Menor área</td><td class="num">${fmt(x.minA)} m²</td><td class="num">${medv(bai.map(b=>b.minA))?fmt(medv(bai.map(b=>b.minA)))+" m²":"—"}</td><td class="num">${aS?fmt(aS)+" m²":"—"}</td></tr>
+  <tr><td>Concorrentes</td><td class="num">—</td><td class="num">${bai.length}</td><td class="num">${st.length}</td></tr>
+  </tbody></table></div>
+  <p class="sub2">Concorrentes mais próximos</p>
+  <div class="list" style="margin-top:0"><table><tbody>${near.map(({b,d})=>`<tr><td>${b.n}<span class="dev">${b.stage} · ${d<1?Math.round(d*1000)+" m":d.toFixed(1).replace(".",",")+" km"}</span></td><td class="num">${brl(b.price)}</td><td class="num">${b.m2?fmt(b.m2)+"/m²":"—"}</td></tr>`).join("")}</tbody></table></div>
+  <p class="arg">${arg}</p></article>`}).join("")}
+// direcionador
+const BAI={av:"Água Verde",xa:"Xaxim",fr:"Fazenda Rio Grande"};
+const ALL=(()=>{const m=new Map();for(const k of ["cw","av","xa","fr"])for(const b of P[k]){if(m.has(b.id))continue;
+ const tipo=b.fin==="Comercial"?"comercial":/casas/i.test(b.n)?"casa":b.minB===0?"lote":"apto";
+ m.set(b.id,{...b,bairro:b.bairro||BAI[k],tipo,stage:b.stage||(b.deliv==="Pronto"?"Pronto novo":"Em construção")})}return [...m.values()]})();
+const $=id=>document.getElementById(id);
+(()=>{const sel=$("m_bairro");[...new Set(ALL.map(b=>b.bairro))].sort((a,b)=>a.localeCompare(b,"pt")).forEach(n=>{const o=document.createElement("option");o.textContent=n;sel.appendChild(o)})})();
+const months=d=>{if(d==="Pronto")return 0;const m=/^(\d\d)\/(\d{4})$/.exec(d);if(!m)return 99;const now=new Date();return (+m[2]-now.getFullYear())*12+(+m[1]-1-now.getMonth())};
+const IDS=["m_nome","m_corretor","m_obj","m_tipo","m_bairro","m_amin","m_amax","m_prazo","m_pag","m_vmax","m_ent","m_renda","m_fgts","m_obs"];
+const val=id=>{const e=$(id);return e.type==="checkbox"?e.checked:e.value};
+const num=id=>{const v=parseFloat($(id).value);return isNaN(v)?null:v};
+function match(){
+ const pag=val("m_pag"),vmax=num("m_vmax"),ent=num("m_ent"),renda=num("m_renda");
+ let teto=vmax??Infinity;if(pag==="fin"&&ent)teto=Math.min(teto,ent/0.2);
+ const tipo=val("m_tipo"),bai=val("m_bairro"),amin=num("m_amin"),amax=num("m_amax"),prazo=val("m_prazo"),inv=val("m_obj")==="investir";
+ let semPreco=0;
+ const res=ALL.filter(b=>{
+  if(tipo==="compacto"&&!(b.tipo==="apto"&&b.minA<=60))return false;
+  if(tipo&&tipo!=="compacto"&&b.tipo!==tipo)return false;
+  if(!tipo&&b.tipo==="comercial")return false;
+  if(bai&&b.bairro!==bai)return false;
+  if(amin!=null&&b.maxA<amin)return false;if(amax!=null&&b.minA>amax)return false;
+  const mo=months(b.deliv);if(prazo==="pronto"&&mo>0)return false;if(prazo==="12"&&mo>12)return false;if(prazo==="planta"&&mo===0)return false;
+  if(b.price==null){semPreco++;return false}
+  return b.price<=teto}).sort((a,b)=>(b.alo-a.alo)||(inv?(a.m2??9e9)-(b.m2??9e9):a.price-b.price));
+ const fin=pag==="fin";$("thEnt").textContent=fin?"Entrada 20%":pag==="vista"?"Total à vista":"Entrada";
+ const parts=[];
+ parts.push(`<span>Teto de compra: <b>${teto===Infinity?"sem limite informado":brl(teto)}</b></span>`);
+ if(fin&&ent)parts.push(`<span>Com ${brl(ent)} de entrada, o banco costuma financiar até 80%: imóvel de até <b>${brl(ent/0.2)}</b></span>`);
+ if(renda)parts.push(`<span>Parcela confortável (30% da renda): <b>até ${brl(renda*0.3).replace(" mil"," mil")}</b>/mês</span>`);
+ if(val("m_fgts"))parts.push(`<span>FGTS soma à entrada (imóvel residencial, regras da Caixa)</span>`);
+ parts.push(`<span><b>${res.length}</b> opções${semPreco?` · ${semPreco} sem preço na Órulo ficaram de fora`:""}</span>`);
+ $("budget").innerHTML=parts.join("");
+ const top=res.slice(0,15);
+ $("mrows").innerHTML=top.length?top.map(b=>`<tr><td>${b.n}${b.alo?'<span class="tag">Alô</span>':""}<span class="dev">${b.bairro} · ${b.stage} · ${b.dev}</span></td><td class="num">${b.minA===b.maxA?fmt(b.minA):fmt(b.minA)+"–"+fmt(b.maxA)}</td><td class="num">${brl(b.price)}</td><td class="num">${b.m2?fmt(b.m2):"—"}</td><td>${b.deliv}</td><td class="num">${fin?brl(b.price*0.2):pag==="vista"?brl(b.price):"tabela"}</td></tr>`).join(""):`<tr><td colspan="6">Nada cabe nesses filtros. Tente ampliar o bairro, a área ou o valor.</td></tr>`;
+ const nome=val("m_nome")||"cliente",cor=val("m_corretor");const t3=res.slice(0,3);
+ $("m_msg").value=t3.length?`Oi, ${nome}! Separei ${t3.length} opções que cabem no que você me contou:\n\n${t3.map((b,i)=>`${i+1}. ${b.n} (${b.bairro}): ${fmt(b.minA)}${b.minA!==b.maxA?" a "+fmt(b.maxA):""} m², a partir de ${brl(b.price)}, ${b.deliv==="Pronto"?"pronto para morar":"entrega "+b.deliv}.`).join("\n")}\n\nQual delas você quer ver primeiro?${cor?"\n\n"+cor+" · Alô Imóveis":""}`:"";
+ const L=(k,v)=>v?`${k}: ${v}\n`:"";
+ $("m_ficha").value=`FICHA DO CLIENTE · Bússola Alô\n`+L("Cliente",val("m_nome"))+L("Corretor",cor)+L("Objetivo",val("m_obj")==="investir"?"Investir (renda)":"Morar")+L("Tipo",$("m_tipo").selectedOptions[0].text)+L("Bairro",bai||"Qualquer")+L("Área",amin||amax?`${amin??"?"} a ${amax??"?"} m²`:"")+L("Prazo",$("m_prazo").selectedOptions[0].text)+L("Pagamento",$("m_pag").selectedOptions[0].text)+L("Valor máximo",vmax?brl(vmax):"")+L("Entrada",ent?brl(ent):"")+L("FGTS",val("m_fgts")?"Sim":"")+L("Renda familiar",renda?brl(renda)+"/mês":"")+L("O que importa",val("m_obs"))+(t3.length?`Opções sugeridas: ${t3.map(b=>b.n).join("; ")}\n`:"");
+ try{const d={};IDS.forEach(id=>d[id]=val(id));localStorage.setItem("bussola-match",JSON.stringify(d))}catch(e){}
+}
+try{const d=JSON.parse(localStorage.getItem("bussola-match")||"null");if(d)IDS.forEach(id=>{const e=$(id);if(d[id]==null)return;if(e.type==="checkbox")e.checked=!!d[id];else e.value=d[id]})}catch(e){}
+$("mform").addEventListener("input",match);$("mform").addEventListener("change",match);
+$("m_limpar").onclick=()=>{$("mform").reset();try{localStorage.removeItem("bussola-match")}catch(e){}match()};
+document.querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>{const t=$(b.dataset.copy);const done=()=>{const o=b.textContent;b.textContent="Copiado";setTimeout(()=>b.textContent=o,1500)};navigator.clipboard.writeText(t.value).then(done).catch(()=>{t.select();b.textContent="Selecionado, use Copiar"})});
+render();compare();match();
 </script>
 
 </body>
