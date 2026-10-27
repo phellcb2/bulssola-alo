@@ -105,6 +105,14 @@ td.num{font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}th.
 .btn{font:600 13px var(--display);border:1.5px solid var(--ink);background:var(--ink);color:var(--surface);border-radius:8px;padding:8px 14px;cursor:pointer;margin-top:6px}
 .btn.ghost{background:transparent;color:var(--ink)}
 .btn:focus-visible{outline:2px solid var(--alo);outline-offset:2px}
+
+#lmap{height:440px;border-radius:10px;z-index:0}
+@media (max-width:600px){#lmap{height:360px}}
+.leaflet-popup-content{font:13px/1.45 var(--body);margin:10px 12px}
+.leaflet-popup-content b{font-family:var(--display)}
+.leaflet-popup-content a{color:#1a5fb4}
+.lbl{background:var(--surface);color:var(--ink);border:1px solid var(--line);font:600 11px var(--display);padding:1px 6px;border-radius:6px;box-shadow:none}
+.lbl:before{display:none}
 footer{margin-top:28px;font-size:12.5px;color:var(--muted);max-width:90ch}
 footer a{color:inherit}
 </style>
@@ -130,7 +138,7 @@ footer a{color:inherit}
         <div><p class="eyebrow">Mapa esquemático</p><h2 id="mapTitle"></h2></div>
         <label class="toggle"><input type="checkbox" id="onlyCut" checked> Só o recorte Alô</label><label class="toggle" id="stageWrap" hidden>Estágio <select id="stageF"><option value="">Todos</option><option>Lançamento</option><option>Em construção</option><option>Pronto novo</option></select></label>
       </div>
-      <div class="mapbox"><svg class="map" id="map" viewBox="0 0 640 380" role="img" aria-label="Posição dos empreendimentos no bairro"></svg></div>
+      <div id="lmap" hidden></div><div class="mapbox" id="svgbox"><svg class="map" id="map" viewBox="0 0 640 380" role="img" aria-label="Posição dos empreendimentos no bairro"></svg></div>
       <div class="legend" id="legend"></div>
       <div class="detail" id="detail">Toque num ponto ou numa linha da lista para ver o empreendimento.</div>
       <div class="list"><table><thead><tr><th>Empreendimento</th><th class="num">Área m²</th><th class="num">A partir de</th><th class="num">R$/m²</th><th class="num">Estoque</th><th>Entrega</th></tr></thead><tbody id="rows"></tbody></table></div>
@@ -171,7 +179,7 @@ footer a{color:inherit}
   </section>
 
   <footer>
-    Fontes: empreendimentos, preços, áreas e estoque da <a href="https://www.orulo.com.br/buildings" target="_blank" rel="noopener">Órulo</a> (consulta em 27/10/2026, só imóveis cadastrados por incorporadoras; "usado" na Órulo é revenda de incorporadora e é amostra pequena). R$/m² médio de lançamentos por bairro: <a href="https://apto.vc/br/pr/curitiba/agua-verde" target="_blank" rel="noopener">apto.vc Água Verde</a> e <a href="https://apto.vc/br/pr/curitiba/xaxim" target="_blank" rel="noopener">apto.vc Xaxim</a>. Valorização do Água Verde: <a href="https://portas.com.br/noticias_da_loft/os-bairros-onde-ficou-mais-caro-comprar-imovel-em-2025-em-curitiba/" target="_blank" rel="noopener">Loft/Portas</a>. Terrenos em condomínio em Fazenda Rio Grande: <a href="https://imoveis.trovit.com.br/condominio-fechado-terreno-fazenda-rio-grande" target="_blank" rel="noopener">Trovit</a>. O mapa mostra a posição relativa dos empreendimentos, sem ruas; cada ponto abre no Google Maps. O direcionador usa regras simples (banco financia até 80% do imóvel pronto); confirme tabela e condições com a incorporadora antes de passar ao cliente.
+    Fontes: empreendimentos, preços, áreas e estoque da <a href="https://www.orulo.com.br/buildings" target="_blank" rel="noopener">Órulo</a> (consulta em 27/10/2026, só imóveis cadastrados por incorporadoras; "usado" na Órulo é revenda de incorporadora e é amostra pequena). R$/m² médio de lançamentos por bairro: <a href="https://apto.vc/br/pr/curitiba/agua-verde" target="_blank" rel="noopener">apto.vc Água Verde</a> e <a href="https://apto.vc/br/pr/curitiba/xaxim" target="_blank" rel="noopener">apto.vc Xaxim</a>. Valorização do Água Verde: <a href="https://portas.com.br/noticias_da_loft/os-bairros-onde-ficou-mais-caro-comprar-imovel-em-2025-em-curitiba/" target="_blank" rel="noopener">Loft/Portas</a>. Terrenos em condomínio em Fazenda Rio Grande: <a href="https://imoveis.trovit.com.br/condominio-fechado-terreno-fazenda-rio-grande" target="_blank" rel="noopener">Trovit</a>. No site da equipe o mapa tem ruas (OpenStreetMap/CARTO); cada ponto abre no Google Maps e no Street View. O direcionador usa regras simples (banco financia até 80% do imóvel pronto); confirme tabela e condições com a incorporadora antes de passar ao cliente.
   </footer>
 </div>
 
@@ -431,6 +439,33 @@ $("mform").addEventListener("input",match);$("mform").addEventListener("change",
 $("m_limpar").onclick=()=>{$("mform").reset();try{localStorage.removeItem("bussola-match")}catch(e){}match()};
 document.querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>{const t=$(b.dataset.copy);const done=()=>{const o=b.textContent;b.textContent="Copiado";setTimeout(()=>b.textContent=o,1500)};navigator.clipboard.writeText(t.value).then(done).catch(()=>{t.select();b.textContent="Selecionado, use Copiar"})});
 render();compare();match();
+
+// mapa com ruas (só no site publicado, onde o navegador libera os mapas)
+const USE_L=/github\.io$/.test(location.hostname)||/[?&]mapa=ruas/.test(location.search);
+let LM=null,LG=null,lastKey="";
+function cssv(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}
+function loadLeaflet(cb){const l=document.createElement("link");l.rel="stylesheet";l.href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css";document.head.appendChild(l);
+ const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js";sc.onload=cb;document.head.appendChild(sc)}
+function leaf(){if(!window.L)return;const t=T[cur];const all=P[cur];const sf=document.getElementById("stageF").value;
+ const shown=(onlyCut.checked?all.filter(t.cut):all).filter(b=>cur!=="cw"||!sf||b.stage===sf);
+ if(!LM){document.getElementById("lmap").hidden=false;document.getElementById("svgbox").hidden=true;
+  const dark=matchMedia("(prefers-color-scheme: dark)").matches&&document.documentElement.dataset.theme!=="light"||document.documentElement.dataset.theme==="dark";
+  LM=L.map("lmap",{scrollWheelZoom:false});
+  L.tileLayer(`https://{s}.basemaps.cartocdn.com/rastertiles/${dark?"dark_all":"voyager"}/{z}/{x}/{y}{r}.png`,{maxZoom:19,subdomains:"abcd",attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'}).addTo(LM);
+  LG=L.layerGroup().addTo(LM);LM.on("click",()=>LM.scrollWheelZoom.enable())}
+ LG.clearLayers();const c=cssv(t.c),alo=cssv("--alo"),off=cssv("--off"),sur=cssv("--surface");
+ const order=[...shown].sort((a,b)=>b.stock-a.stock);
+ for(const b of order){const i=all.indexOf(b);const on=t.cut(b);
+  const mk=L.circleMarker([b.lat,b.lng],{radius:Math.max(6,Math.min(16,4+Math.sqrt(b.stock)*1.3)),color:sel===i?cssv("--ink"):(on||b.alo?sur:off),weight:sel===i?3:1.5,fillColor:b.alo?alo:on?c:sur,fillOpacity:on||b.alo?.9:1}).addTo(LG);
+  mk.bindPopup(`<b>${b.n}</b>${b.alo?" · Alô":""}<br>${b.dev}${b.bairro?" · "+b.bairro:""}<br>${b.minA===b.maxA?fmt(b.minA):fmt(b.minA)+" a "+fmt(b.maxA)} m² · a partir de ${brl(b.price)}${b.m2?" · R$ "+fmt(b.m2)+"/m²":""}<br>${b.stock} de ${b.units} disponíveis · entrega ${b.deliv}<br><a href="https://www.google.com/maps/search/?api=1&query=${b.lat},${b.lng}" target="_blank" rel="noopener">Google Maps</a> · <a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${b.lat},${b.lng}" target="_blank" rel="noopener">Street View</a> · <a href="https://www.orulo.com.br/buildings/${b.id}" target="_blank" rel="noopener">Órulo</a>`);
+  if(b.alo)mk.bindTooltip(b.n,{permanent:true,direction:"right",className:"lbl",offset:[8,0]});
+  mk.on("click",()=>{sel=i;const prev=lastKey;right();lastKey=prev;setTimeout(()=>{LG.eachLayer(l=>{if(l.getLatLng().lat===b.lat&&l.getLatLng().lng===b.lng&&l.getPopup())l.openPopup()})},0)})}
+ const key=cur+"|"+onlyCut.checked+"|"+sf;
+ if(key!==lastKey&&shown.length){LM.fitBounds(L.latLngBounds(shown.map(b=>[b.lat,b.lng])).pad(0.15),{maxZoom:16});lastKey=key}
+ else if(key!==lastKey){LM.setView(cur==="fr"?[-25.66,-49.31]:[-25.45,-49.27],13);lastKey=key}
+ if(sel!=null&&all[sel])LM.panTo([all[sel].lat,all[sel].lng]);
+ setTimeout(()=>LM.invalidateSize(),50)}
+if(USE_L){const _r=right;right=function(){_r();leaf()};loadLeaflet(()=>right())}
 </script>
 
 </body>
