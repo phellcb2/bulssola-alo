@@ -111,6 +111,7 @@ td.num{font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}th.
 .leaflet-popup-content{font:13px/1.45 var(--body);margin:10px 12px}
 .leaflet-popup-content b{font-family:var(--display)}
 .leaflet-popup-content a{color:#1a5fb4}
+.tiles-dark{filter:invert(1) hue-rotate(180deg) brightness(.9) contrast(.9)}
 .lbl{background:var(--surface);color:var(--ink);border:1px solid var(--line);font:600 11px var(--display);padding:1px 6px;border-radius:6px;box-shadow:none}
 .lbl:before{display:none}
 footer{margin-top:28px;font-size:12.5px;color:var(--muted);max-width:90ch}
@@ -179,7 +180,7 @@ footer a{color:inherit}
   </section>
 
   <footer>
-    Fontes: empreendimentos, preços, áreas e estoque da <a href="https://www.orulo.com.br/buildings" target="_blank" rel="noopener">Órulo</a> (consulta em 27/10/2026, só imóveis cadastrados por incorporadoras; "usado" na Órulo é revenda de incorporadora e é amostra pequena). R$/m² médio de lançamentos por bairro: <a href="https://apto.vc/br/pr/curitiba/agua-verde" target="_blank" rel="noopener">apto.vc Água Verde</a> e <a href="https://apto.vc/br/pr/curitiba/xaxim" target="_blank" rel="noopener">apto.vc Xaxim</a>. Valorização do Água Verde: <a href="https://portas.com.br/noticias_da_loft/os-bairros-onde-ficou-mais-caro-comprar-imovel-em-2025-em-curitiba/" target="_blank" rel="noopener">Loft/Portas</a>. Terrenos em condomínio em Fazenda Rio Grande: <a href="https://imoveis.trovit.com.br/condominio-fechado-terreno-fazenda-rio-grande" target="_blank" rel="noopener">Trovit</a>. No site da equipe o mapa tem ruas (OpenStreetMap/CARTO); cada ponto abre no Google Maps e no Street View. O direcionador usa regras simples (banco financia até 80% do imóvel pronto); confirme tabela e condições com a incorporadora antes de passar ao cliente.
+    Fontes: empreendimentos, preços, áreas e estoque da <a href="https://www.orulo.com.br/buildings" target="_blank" rel="noopener">Órulo</a> (consulta em 27/10/2026, só imóveis cadastrados por incorporadoras; "usado" na Órulo é revenda de incorporadora e é amostra pequena). R$/m² médio de lançamentos por bairro: <a href="https://apto.vc/br/pr/curitiba/agua-verde" target="_blank" rel="noopener">apto.vc Água Verde</a> e <a href="https://apto.vc/br/pr/curitiba/xaxim" target="_blank" rel="noopener">apto.vc Xaxim</a>. Valorização do Água Verde: <a href="https://portas.com.br/noticias_da_loft/os-bairros-onde-ficou-mais-caro-comprar-imovel-em-2025-em-curitiba/" target="_blank" rel="noopener">Loft/Portas</a>. Terrenos em condomínio em Fazenda Rio Grande: <a href="https://imoveis.trovit.com.br/condominio-fechado-terreno-fazenda-rio-grande" target="_blank" rel="noopener">Trovit</a>. No site da equipe o mapa tem ruas (OpenStreetMap); cada ponto abre no Google Maps e no Street View. O direcionador usa regras simples (banco financia até 80% do imóvel pronto); confirme tabela e condições com a incorporadora antes de passar ao cliente.
   </footer>
 </div>
 
@@ -451,7 +452,7 @@ function leaf(){if(!window.L)return;const t=T[cur];const all=P[cur];const sf=doc
  if(!LM){document.getElementById("lmap").hidden=false;document.getElementById("svgbox").hidden=true;
   const dark=matchMedia("(prefers-color-scheme: dark)").matches&&document.documentElement.dataset.theme!=="light"||document.documentElement.dataset.theme==="dark";
   LM=L.map("lmap",{scrollWheelZoom:false});
-  L.tileLayer(`https://{s}.basemaps.cartocdn.com/rastertiles/${dark?"dark_all":"voyager"}/{z}/{x}/{y}{r}.png`,{maxZoom:19,subdomains:"abcd",attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'}).addTo(LM);
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,className:dark?"tiles-dark":"",attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(LM);
   LG=L.layerGroup().addTo(LM);LM.on("click",()=>LM.scrollWheelZoom.enable())}
  LG.clearLayers();const c=cssv(t.c),alo=cssv("--alo"),off=cssv("--off"),sur=cssv("--surface");
  const order=[...shown].sort((a,b)=>b.stock-a.stock);
