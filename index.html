@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Bússola dos Territórios Alô</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: cabeçalho curto, abas por território, bússola + números à esquerda, mapa esquemático + lista à direita */
+:root{
+  --bg:#f4f6f5; --surface:#ffffff; --ink:#17201d; --muted:#5d6b66; --line:#dbe2df;
+  --av:#1f7a6b; --xa:#a8661a; --fr:#4a5bc4; --cw:#8a3f8f; --off:#9aa6a1; --alo:#d0352b;
+  --display:"Sora",system-ui,sans-serif; --body:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1513; --surface:#17201d; --ink:#e7eeeb; --muted:#9db0a9; --line:#2a3632;
+  --av:#3fb39e; --xa:#e0a052; --fr:#8796f0; --cw:#cf8fd6; --off:#5f6c67; --alo:#ff6a5c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1513; --surface:#17201d; --ink:#e7eeeb; --muted:#9db0a9; --line:#2a3632;
+  --av:#3fb39e; --xa:#e0a052; --fr:#8796f0; --cw:#cf8fd6; --off:#5f6c67; --alo:#ff6a5c; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--body);margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-block:28px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;flex-wrap:wrap;gap:12px 32px;align-items:end;justify-content:space-between;margin-bottom:22px}
+h1{font:700 clamp(26px,4vw,38px)/1.1 var(--display);margin:0;letter-spacing:-.01em;text-wrap:balance}
+.sub{color:var(--muted);margin:6px 0 0;max-width:62ch}
+.asof{font:12px var(--mono);color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.tab{--c:var(--ink);font:600 14px var(--display);border:1.5px solid var(--line);background:var(--surface);color:var(--ink);padding:9px 16px;border-radius:999px;cursor:pointer;display:flex;gap:8px;align-items:center}
+.tab i{width:10px;height:10px;border-radius:50%;background:var(--c)}
+.tab[aria-selected="true"]{border-color:var(--c);box-shadow:inset 0 0 0 1px var(--c)}
+.tab:focus-visible,.row:focus-visible,circle:focus-visible{outline:2px solid var(--c,var(--av));outline-offset:2px}
+.grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:20px}
+@media (max-width:860px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;min-width:0}
+.eyebrow{font:500 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+h2{font:700 22px/1.2 var(--display);margin:0 0 4px}
+.lead{margin:0 0 16px;color:var(--muted)}
+/* bússola */
+.compass{display:grid;grid-template-columns:1fr auto 1fr;grid-template-rows:auto auto auto;gap:10px;align-items:center}
+.pt{background:var(--bg);border-radius:10px;padding:10px 12px;min-width:0}
+.pt b{display:block;font:600 10.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--c)}
+.pt span{font-size:13.5px;line-height:1.45}
+.n{grid-column:1/4}.s{grid-column:1/4}
+.rose{width:92px;height:92px}
+@media (max-width:480px){.compass{grid-template-columns:1fr}.n,.s{grid-column:auto}.rose{justify-self:center;order:-1}}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+.stat{border-top:2px solid var(--c);padding-top:8px}
+.stat strong{display:block;font:600 19px var(--display);font-variant-numeric:tabular-nums}
+.stat small{color:var(--muted);font-size:12px}
+.note{margin-top:14px;font-size:13.5px;background:color-mix(in srgb,var(--c) 10%,transparent);border-radius:10px;padding:10px 12px}
+.note b{color:var(--c)}
+/* mapa */
+.maphead{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+.toggle{font-size:13px;color:var(--muted);display:flex;gap:6px;align-items:center}
+.mapbox{background:var(--bg);border-radius:10px;overflow:hidden}
+svg.map{display:block;width:100%;height:auto}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:8px}
+.legend span{display:flex;gap:6px;align-items:center}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.detail{min-height:64px;margin-top:10px;font-size:13.5px;border-left:3px solid var(--c);padding:6px 0 6px 12px}
+.detail a{color:var(--c)}
+.list{margin-top:16px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font:500 10.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}th.num{text-align:right}
+.row{cursor:pointer}.row:hover,.row.on{background:color-mix(in srgb,var(--c) 9%,transparent)}
+.row.out{color:var(--muted)}
+.tag{font:500 10px var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:1px 6px;border-radius:4px;background:var(--alo);color:#fff;margin-left:6px;white-space:nowrap}
+.dev{display:block;color:var(--muted);font-size:12px}
+footer{margin-top:28px;font-size:12.5px;color:var(--muted);max-width:90ch}
+footer a{color:inherit}
+</style>
+
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <p class="asof">Alô Imóveis · Curitiba e RMC · Órulo em 21/10/2026</p>
+      <h1>Bússola dos Territórios</h1>
+      <p class="sub">Onde a Alô vai ser referência: para quem vender, o que vender, a que preço e com qual mensagem, com os empreendimentos que já estão no mercado em cada bairro.</p>
+    </div>
+  </header>
+
+  <div class="tabs" role="tablist" id="tabs"></div>
+
+  <div class="grid">
+    <section class="panel" id="left"></section>
+    <section class="panel" id="right">
+      <div class="maphead">
+        <div><p class="eyebrow">Mapa esquemático</p><h2 id="mapTitle"></h2></div>
+        <label class="toggle"><input type="checkbox" id="onlyCut" checked> Só o recorte Alô</label><label class="toggle" id="stageWrap" hidden>Estágio <select id="stageF"><option value="">Todos</option><option>Lançamento</option><option>Em construção</option><option>Pronto novo</option></select></label>
+      </div>
+      <div class="mapbox"><svg class="map" id="map" viewBox="0 0 640 380" role="img" aria-label="Posição dos empreendimentos no bairro"></svg></div>
+      <div class="legend" id="legend"></div>
+      <div class="detail" id="detail">Toque num ponto ou numa linha da lista para ver o empreendimento.</div>
+      <div class="list"><table><thead><tr><th>Empreendimento</th><th class="num">Área m²</th><th class="num">A partir de</th><th class="num">R$/m²</th><th class="num">Estoque</th><th>Entrega</th></tr></thead><tbody id="rows"></tbody></table></div>
+    </section>
+  </div>
+
+  <footer>
+    Fontes: empreendimentos, preços, áreas e estoque da <a href="https://www.orulo.com.br/buildings" target="_blank" rel="noopener">Órulo</a> (consulta em 21/10/2026, só imóveis novos cadastrados por incorporadoras). R$/m² médio de lançamentos por bairro: <a href="https://apto.vc/br/pr/curitiba/agua-verde" target="_blank" rel="noopener">apto.vc Água Verde</a> e <a href="https://apto.vc/br/pr/curitiba/xaxim" target="_blank" rel="noopener">apto.vc Xaxim</a>. Valorização do Água Verde: <a href="https://portas.com.br/noticias_da_loft/os-bairros-onde-ficou-mais-caro-comprar-imovel-em-2025-em-curitiba/" target="_blank" rel="noopener">Loft/Portas</a>. Terrenos em condomínio em Fazenda Rio Grande: <a href="https://imoveis.trovit.com.br/condominio-fechado-terreno-fazenda-rio-grande" target="_blank" rel="noopener">Trovit</a>. O mapa mostra a posição relativa dos empreendimentos, sem ruas; cada ponto abre no Google Maps. A carteira de usados do Jetimob e a localização do MUV entram na próxima versão.
+  </footer>
+</div>
+
+<script>
+const T={
+ av:{name:"Água Verde",c:"--av",
+  lead:"Studios, 1 e 2 quartos até 60 m² para quem investe em renda ou quer morar perto do Batel e do Centro.",
+  N:"Investidor de aluguel e curta temporada; jovem profissional que quer o primeiro imóvel bem localizado.",
+  L:"Studio, 1 e 2 quartos até 60 m², pronto ou na planta.",
+  S:"Entrada a partir de R$ 191 mil; o m² dos lançamentos no bairro gira em R$ 14,2 mil (apto.vc).",
+  O:"O bairro que liderou a alta de preço médio em Curitiba no 1º semestre de 2025 (+43%, Loft).",
+  note:"<b>Captação:</b> o recorte tem muita oferta de incorporadora. O diferencial da Alô é o revendedor: investidor que comprou na planta e quer sair, e unidade pronta com contrato de aluguel. A Piazza di Roma é da própria Alô.",
+  cut:b=>b.fin==="Residencial"&&b.minA<=60},
+ xa:{name:"Xaxim",c:"--xa",
+  lead:"Lotes em condomínio para quem quer construir a casa em Curitiba, com segurança e m² baixo.",
+  N:"Família que quer construir a casa sem sair de Curitiba, com portaria e lazer.",
+  L:"Lotes em condomínio fechado, de 80 a 520 m².",
+  S:"Lotes a partir de R$ 205 mil; o m² dos lançamentos do bairro é R$ 4,1 mil contra R$ 14,6 mil da média de Curitiba (apto.vc).",
+  O:"Construir em Curitiba, em condomínio fechado, pagando menos de um terço do m² da cidade.",
+  note:"<b>Captação:</b> o Boulevard Club tem 107 dos 262 lotes ainda em estoque. Parceria com a incorporadora e revenda de lotes de quem comprou e não construiu são o caminho mais rápido.",
+  cut:b=>b.fin==="Residencial"&&b.minB===0},
+ fr:{name:"Fazenda Rio Grande",c:"--fr",
+  lead:"Lotes em condomínio para o primeiro terreno: mais espaço por menos, a 25 km do Centro de Curitiba.",
+  N:"Quem compra o primeiro terreno; quem trabalha no polo logístico da região ou em Curitiba e quer espaço.",
+  L:"Lotes em condomínio fechado.",
+  S:"Na Órulo só há casas e aptos de R$ 226 mil a R$ 310 mil. Os lotes em condomínio estão nos portais: o Trovit lista 116 terrenos em condomínio fechado.",
+  O:"Seu terreno em condomínio com parcela que cabe no bolso, perto de Curitiba.",
+  note:"<b>Lacuna:</b> nenhum condomínio de lotes residencial de Fazenda está na Órulo. As loteadoras vendem direto. Quem fizer parceria com elas e organizar essa oferta vira a referência do território.",
+  cut:b=>b.fin==="Residencial"&&b.minB===0},
+ cw:{name:"Compactos Curitiba",c:"--cw",
+  lead:"Todos os compactos de Curitiba na Órulo com unidades em estoque: lançamentos, em obra e prontos, a partir de 10 m². Use para comparar o MUV Residence e o Piazza di Roma com a concorrência.",
+  N:"Investidor de renda (aluguel ou curta temporada) e jovem profissional que quer morar perto do trabalho.",
+  L:"Studios, 1 e 2 quartos. 185 empreendimentos: 39 lançamentos, 100 em obra e 46 prontos.",
+  S:"Entrada mediana de R$ 350 mil e R$ 12,6 mil/m². Lançamentos a partir de R$ 305 mil (mediana); prontos R$ 362 mil, a R$ 13,5 mil/m².",
+  O:"MUV: pronto para alugar já, no Centro, entrada de R$ 320 mil. Piazza: na planta no Água Verde, R$ 10,9 mil/m², abaixo da mediana da cidade.",
+  note:"<b>Leitura:</b> são 6.037 unidades compactas em estoque na cidade, 1.960 delas em lançamento. O Centro concentra a maior oferta. O MUV compete com prontos do Centro como Morá, 2700VG, Refinatto, TBG e Zion José Loureiro; o Piazza tem um dos menores R$/m² entre os compactos na planta. Dados da Órulo em 27/10/2026.",
+  cut:b=>b.minA<=60}
+};
+const D={
+ av:[
+ ["Chrona","Bonah Incorporadora",-25.460663,-49.289076,23,58,null,null,31,31,"12/2027",84734],
+ ["Arte Acqua","Artesa Construtora",-25.449746,-49.281786,170.51,213.28,2398000,14064,2,30,"Pronto",35952],
+ ["Sunset Água Verde 6","Luna Incorporações",-25.459046,-49.272818,265.03,335.19,1730189,5930,4,8,"12/2026",71430],
+ ["Opulus","Coral Engenharia",-25.446717,-49.283133,78.15,141.81,1173406,14982,13,28,"Pronto",62038],
+ ["Lunetto","Pride",-25.462436,-49.289906,23.66,26.5,372300,15735,3,175,"Pronto",29716],
+ ["Vicenza","Zanardi Construtora",-25.459762,-49.28536,105,252,1399000,13324,8,16,"03/2027",65132],
+ ["L'ARQ","Víncere",-25.463964,-49.287774,85.86,382.61,1136514,13237,43,59,"10/2029",82498],
+ ["Mônaco Residence","Arbo Empreendimentos",-25.460816,-49.285797,24.66,24.69,279250,11324,4,27,"06/2027",76897],
+ ["AOI Tatemono","RPLK",-25.44696,-49.285504,24.29,42.84,362700,13865,3,36,"Pronto",72366],
+ ["Ville Vert","KLW",-25.462771,-49.288229,28.39,88.07,320000,11272,22,28,"11/2026",64058],
+ ["Âmbar","RPLK",-25.461556,-49.282538,20.23,61.6,281790,13929,32,54,"12/2028",78968],
+ ["Apus","Maya Incorporadora",-25.458703,-49.282358,45.86,146.79,734834,15015,13,30,"03/2028",76014],
+ ["Sieg Arenna","Welt Empreendimentos",-25.449724,-49.277747,19.11,31.82,444715,15111,13,46,"12/2027",69261],
+ ["Piazza di Roma","Alô Incorp",-25.45855,-49.287119,29.53,127.35,369593,10861,44,87,"12/2028",61185,1],
+ ["Terrasse La Vie","Terrasse",-25.46803,-49.288757,71.72,177.16,935000,12977,71,89,"09/2030",80385],
+ ["Terrasse Infini","Terrasse",-25.458357,-49.288637,78.33,113.67,1080000,13174,38,105,"06/2028",53204],
+ ["Terrasse Créatif","Terrasse",-25.457588,-49.29018,94.34,94.34,1320000,13992,1,78,"Pronto",20791],
+ ["Ace Água Verde","Winner Incorporações",-25.467339,-49.287428,17.37,67.7,191070,11000,69,91,"10/2028",86571],
+ ["Greca Tower","Bouw",-25.455807,-49.286415,155.39,202.19,3160000,20336,8,34,"10/2027",19676],
+ ["Pulse","Vanguard PR",-25.458242,-49.286947,78.03,236.72,1009364,12936,22,116,"06/2028",68270],
+ ["Square House Água Verde","RZilli PR",-25.470449,-49.286005,92.98,92.98,718800,7731,1,42,"Pronto",30354],
+ ["Arte Vert","Artesa Construtora",-25.463021,-49.281884,81.47,204.2,982835,12064,6,36,"05/2028",75918],
+ ["Lemme","Bidese",-25.459607,-49.283727,134.68,312.49,2819424,20934,9,45,"Pronto",37103],
+ ["Lee Dama Tower I","Sanches Construtora",-25.456058,-49.287212,18.81,31.6,304990,14914,18,154,"07/2029",82504],
+ ["Place 757","Bos Incorporações",-25.452901,-49.291493,95.28,303.73,1320000,13854,8,28,"Pronto",46932],
+ ["Atlân","GT Building",-25.447347,-49.285859,90.75,267.85,1687040,18590,16,60,"12/2026",54051],
+ ["Ágon Residence","Plaenge PR",-25.461985,-49.28426,129.59,143.47,2119120,15592,5,61,"04/2027",56354],
+ ["Bento 246","Silicon Engenharia",-25.45082,-49.281345,108.45,293.7,1596105,14717,4,38,"Pronto",44523],
+ ["Piazza 685","ABCR",-25.452046,-49.284105,145,170,2796150,16448,2,23,"Pronto",37213],
+ ["Eternity","ABCR",-25.464312,-49.28239,70,80,925097,13030,21,43,"11/2028",76222],
+ ["Lagom Jardim","Deo Empreendimentos",-25.445915,-49.283099,166.84,596.47,2786400,16577,16,16,"06/2028",60984],
+ ["Tissot","BCR Empreendimento",-25.451401,-49.272335,28.84,82.64,389057,13490,15,45,"03/2027",85406],
+ ["Piemonte Poty","Piemonte PR",-25.450474,-49.288969,162.14,162.14,3444134,21242,14,56,"11/2027",59492],
+ ["Zenit Água Verde","Reitzfeld PR",-25.459882,-49.27874,71.82,183.96,863000,12016,22,58,"10/2027",58644],
+ ["Ara","Veres",-25.465811,-49.283978,76.27,255.19,914003,11940,25,40,"07/2028",67182],
+ ["Wave","Damiani",-25.451704,-49.275407,19.1,101.56,357161,18700,24,160,"12/2028",70360],
+ ["Goa","Tricon",-25.463426,-49.283957,65.06,202.64,799000,12281,6,33,"07/2027",67310],
+ ["Vibra Residence","Morada Nova",-25.460396,-49.280174,25.37,47.75,287397,11328,33,77,"07/2028",85852],
+ ["Orfeu","Grupo Hestia",-25.460546,-49.283136,85.35,190.57,1215635,14243,13,27,"Pronto",74560],
+ ["Plural","Construtora Pessoa",-25.4493,-49.278261,30.19,86.89,452548,14990,10,46,"Pronto",35038],
+ ["Cedrat","Cima",-25.465143,-49.291166,141,159,2253000,15979,44,92,"06/2029",68167],
+ ["Átrio","Mactec Engenharia",-25.469392,-49.286554,133.72,133.72,1359000,10163,1,56,"Pronto",65949]
+ ],
+ xa:[
+ ["Boulevard Club Condominium","Estilo Empreendimentos",-25.501458,-49.270102,173.74,328.65,626333,3605,107,262,"Pronto",36815,0,0],
+ ["Origens Condomínio","Elio Winter PR",-25.523221,-49.260858,131.62,523.61,429608,3264,34,83,"11/2028",74064,0,0],
+ ["Tows Hill Residence","GR Incorporadora",-25.524364,-49.260865,79.62,89.02,205000,2573,6,90,"Pronto",45864,0,0],
+ ["Tannenbaum (casas)","Casteval",-25.493767,-49.266121,121.66,184.62,1070000,8795,4,8,"Pronto",60523,0,3],
+ ["Mykonos (casas)","RPLK",-25.518857,-49.265204,100,100,677000,6770,1,4,"Pronto",72591,0,3],
+ ["Santorini (casas)","RPLK",-25.518971,-49.265514,105,105,659000,6276,1,4,"Pronto",72592,0,3],
+ ["Residencial Avenca (casas)","Z15",-25.505869,-49.266972,107.35,107.35,650000,6055,1,3,"Em obra",20062,0,3],
+ ["Vista da Serra casa 02","Reus Construtora",-25.501972,-49.264773,121.65,121.65,699000,5746,1,1,"Pronto",81449,0,3]
+ ],
+ fr:[
+ ["Mendoza (aptos 2q)","Pride",-25.709181,-49.310526,35.74,35.74,225700,6315,262,384,"12/2029",84253,0,2],
+ ["Residencial Venezian (casas)","Paranaense Construtora",-25.696909,-49.306977,53,60,310000,5167,43,52,"09/2027",70812,0,2],
+ ["Residencial Treviso fase 3 (casas)","Treèle",-25.67132,-49.327022,42.42,42.42,287590,6780,9,137,"03/2027",71904,0,2],
+ ["Green Company (condomínio empresarial)","De Amorim",-25.646578,-49.261314,2100,2100,1155000,550,4,230,"Pronto",42997,0,0,"Comercial"]
+ ],
+ cw:[["Dot - Residencial", "Quest Construtora", -25.502024, -49.295702, 29.6, 60, 344500, 11639, 72, 152, "04/2029", 76372, 0, 1, "Residencial", "Capão Raso", "Em construção"], ["Pine Blue", "MGA Construtora", -25.507247, -49.293918, 58.81, 61.67, 548017, 9045, 103, 126, "07/2028", 71718, 0, 2, "Residencial", "Capão Raso", "Em construção"], ["High City Habitat 1 (Torre A e B)", "Hype", -25.491433, -49.298814, 55.82, 57.88, 566676, 9791, 3, 130, "11/2026", 38720, 0, 2, "Residencial", "Novo Mundo", "Em construção"], ["High City Habitat 2 (Torre C)", "Hype", -25.49138, -49.29867, 32.5, 57.4, 420900, 12951, 3, 70, "11/2026", 66211, 0, 1, "Residencial", "Novo Mundo", "Em construção"], ["Houston Residence", "Jota2F Construtora", -25.49535, -49.290885, 22.59, 31.62, 239900, 10568, 11, 52, "03/2028", 80196, 0, 1, "Residencial", "Novo Mundo", "Em construção"], ["Sync House", "Valor Real", -25.492847, -49.29869, 45.06, 97.13, 412000, 9143, 56, 280, "02/2030", 84382, 0, 2, "Residencial", "Novo Mundo", "Lançamento"], ["Vega Neoville", "Rottas Construtora", -25.501889, -49.309838, 46.25, 93.52, 413802, 8947, 26, 192, "12/2027", 66222, 0, 2, "Residencial", "Neoville", "Em construção"], ["Hagen Residencial", "USC Fernandes", -25.497822, -49.290067, 24.64, 72.64, 229522, 9315, 35, 54, "09/2028", 73076, 0, 1, "Residencial", "Capão Raso", "Em construção"], ["TJM 526", "Treèle", -25.500253, -49.291649, 46.86, 46.93, 527785, 11246, 2, 36, "Pronto", 34850, 0, 2, "Residencial", "Capão Raso", "Pronto novo"], ["Neo Mundi", "Piacentini Construtora", -25.494075, -49.299253, 32.65, 48.93, 373472, 11439, 38, 108, "08/2028", 59640, 0, 1, "Residencial", "Novo Mundo", "Em construção"], ["Vittace Bosque - Fase 2", "Prestes", -25.514891, -49.314077, 54.85, 58.07, 435138, 7933, 4, 192, "03/2027", 53963, 0, 2, "Residencial", "Capão Raso", "Em construção"], ["Urban Square", "Sanches Construtora", -25.506416, -49.312608, 25.98, 33, 248992, 9584, 14, 24, "05/2029", 83624, 0, 1, "Residencial", "Neoville", "Lançamento"], ["Converge - Residencial", "Blue", -25.506259, -49.296323, 25.77, 34.98, 299112, 11607, 150, 240, "07/2030", 83365, 0, 1, "Residencial", "Capão Raso", "Lançamento"], ["Cortese", "MRV PR", -25.50838, -49.31442, 33.6, 80.31, 331306, 9860, 16, 144, "03/2028", 81748, 0, 2, "Residencial", "Cidade Industrial", "Lançamento"], ["Essence", "Make It", -25.495506, -49.303428, 26.56, 74.92, 306583, 11461, 29, 256, "12/2028", 74146, 0, 1, "Residencial", "Novo Mundo", "Em construção"], ["Naví Garcia", "ACKL Empreendimentos", -25.496227, -49.238922, 29.33, 115.71, 290691, 9911, 16, 20, "06/2027", 71186, 0, 1, "Residencial", "Boqueirão", "Em construção"], ["Concept Le Monde", "Realmarka Construções", -25.476869, -49.311257, 51.12, 228.11, 618981, 12108, 24, 200, "12/2026", 35302, 0, 2, "Residencial", "Portão", "Em construção"], ["The Balance", "O3 Empreendimentos", -25.436171, -49.303894, 21.26, 87.15, 353400, 15919, 17, 84, "08/2027", 65951, 0, 1, "Residencial", "Bigorrilho", "Em construção"], ["Sorano", "Pride", -25.485316, -49.293747, 24.24, 47.94, 298300, 11819, 57, 375, "11/2028", 64406, 0, 1, "Residencial", "Novo Mundo", "Em construção"], ["Temple Batel", "GT Building", -25.435195, -49.290606, 40.25, 53.87, 1022040, 18972, 6, 102, "Pronto", 28671, 0, 1, "Residencial", "Batel", "Pronto novo"], ["Sprada 402 Studios", "Paranaense Construtora", -25.449291, -49.318101, 10.74, 22.21, 159900, 14888, 17, 18, "08/2027", 70813, 0, 1, "Residencial", "Campo Comprido", "Em construção"], ["Uno Solare", "Pride", -25.482664, -49.291196, 30.66, 30.66, 392200, 12792, 6, 188, "12/2026", 35183, 0, 1, "Residencial", "Portão", "Em construção"], ["Bioos Barigui", "Laguna", -25.437178, -49.312867, 48.23, 261.99, 926551, 18764, 60, 92, "01/2029", 76543, 0, 1, "Residencial", "Campina do Siqueira", "Em construção"], ["Quinta - Breve Lançamento", "Sicuro Engenharia", -25.427642, -49.296279, 32.81, 114.28, null, null, 1, 0, "12/2028", 83116, 0, 1, "Residencial", "Mercês", "Lançamento"], ["Next 360", "Enkan", -25.475324, -49.313847, 34.52, 171.73, 349900, 9870, 20, 36, "03/2028", 71934, 0, 1, "Residencial", "Portão", "Em construção"], ["Blentt - Residencial", "ATR Incorporadora PR", -25.473648, -49.292331, 58, 119.58, 707091, 12191, 6, 84, "07/2027", 49232, 0, 2, "Residencial", "Portão", "Em construção"], ["One Life", "Basesul", -25.466038, -49.291649, 16.74, 30.17, 323550, 18394, 15, 504, "Pronto", 37099, 0, 1, "Residencial", "Portão", "Pronto novo"], ["Moradas da Mata", "Hope Incorporadora", -25.44444, -49.33898, 29.84, 55.44, 430821, 14361, 24, 70, "Pronto", 58249, 0, 1, "Residencial", "Campo Comprido", "Pronto novo"], ["Avvio", "Tricon", -25.456869, -49.301484, 59.42, 65.53, 799000, 13447, 4, 22, "10/2026", 51913, 0, 2, "Residencial", "Vila Izabel", "Em construção"], ["Reserva Barigui Lago - Fase 1", "Avantti", -25.431983, -49.31474, 36.36, 69.74, 616056, 16800, 14, 162, "Pronto", 30083, 0, 1, "Residencial", "Barigui", "Pronto novo"], ["Reserva Barigui Lago - Fase 2", "Avantti", -25.431983, -49.31474, 36.53, 156.49, 612389, 16700, 32, 170, "Pronto", 44529, 0, 1, "Residencial", "Barigui", "Pronto novo"], ["Costa Ecoville", "MB Costa Incorporadora", -25.443824, -49.343104, 38.43, 148.1, 520000, 13531, 10, 40, "07/2027", 62411, 0, 1, "Residencial", "Campo Comprido", "Em construção"], ["Flow", "Vinci Empreendimentos", -25.435903, -49.302154, 22.65, 35.4, 347354, 15336, 32, 41, "09/2028", 82550, 0, 1, "Residencial", "Bigorrilho", "Lançamento"], ["New Garden", "Valor Real", -25.486935, -49.292887, 18.48, 53.38, 287370, 11667, 78, 244, "04/2029", 78394, 0, 1, "Residencial", "Novo Mundo", "Em construção"], ["Luna House", "Valor Real", -25.480567, -49.295362, 25.8, 66.4, 274369, 10634, 45, 256, "04/2029", 76773, 0, 1, "Residencial", "Novo Mundo", "Em construção"], ["Square House Portão", "RZilli PR", -25.477716, -49.294105, 26.03, 53.47, 333500, 12812, 32, 61, "Pronto", 51910, 0, 1, "Residencial", "Portão", "Pronto novo"], ["My Way Studios - Breve Lançamento", "CRM", -25.437532, -49.304039, 18.12, 42.5, 260990, 13882, 23, 48, "03/2027", 64893, 0, 1, "Residencial", "Campina do Siqueira", "Em construção"], ["LIV.IN", "Prestes", -25.461923, -49.333038, 43.84, 66.91, 558796, 12746, 62, 128, "06/2028", 50579, 0, 1, "Residencial", "Campo Comprido", "Em construção"], ["Yes Ecoville", "TM3 Incorporadora PR", -25.433803, -49.33899, 55.57, 57.26, 675170, 12076, 41, 66, "02/2027", 49266, 0, 2, "Residencial", "Mossunguê", "Em construção"], ["Kobe", "TM3 Incorporadora PR", -25.460195, -49.292317, 34.66, 154.4, 471090, 13592, 15, 39, "03/2028", 73927, 0, 1, "Residencial", "Vila Izabel", "Em construção"], ["Plus Portão - Residencial", "Blue", -25.473974, -49.293549, 39.21, 53.27, 594255, 11156, 4, 263, "Pronto", 26610, 0, 2, "Residencial", "Portão", "Pronto novo"], ["Barigui Privilège", "H. Franck", -25.411302, -49.326498, 58.11, 122.16, 561124, 9656, 15, 92, "12/2028", 76249, 0, 2, "Residencial", "Santa Felicidade", "Lançamento"], ["Moov - Breve Lançamento", "Basesul", -25.434707, -49.299895, 18.32, 57.57, 309225, 15923, 27, 78, "06/2029", 80225, 0, 1, "Residencial", "Bigorrilho", "Lançamento"], ["Smart Living Portão", "Marvi Incorporadora", -25.474754, -49.291252, 18.45, 50.96, 243540, 13200, 36, 50, "03/2029", 72965, 0, 1, "Residencial", "Portão", "Lançamento"], ["AMA", "Aliv Incorporadora", -25.467866, -49.311591, 23.65, 118.95, 237120, 10026, 23, 32, "03/2028", 65568, 0, 1, "Residencial", "Portão", "Em construção"], ["Riviera Residence - Breve Lançamento", "GR Incorporadora", -25.448718, -49.34237, 33.46, 117.07, null, null, 37, 37, "06/2029", 78760, 0, 1, "Residencial", "Campo Comprido", "Lançamento"], ["2700VG", "Deo Empreendimentos", -25.436324, -49.267907, 18.9, 53.38, 360600, 19079, 17, 150, "Pronto", 44252, 0, 1, "Residencial", "Centro", "Pronto novo"], ["Fortune", "Realmarka Construções", -25.488152, -49.245077, 22.14, 56.67, 294308, 13293, 16, 80, "10/2027", 57684, 0, 1, "Residencial", "Hauer", "Em construção"], ["Mantiqueira", "Quest Construtora", -25.414485, -49.216752, 56.11, 103.13, 572930, 10211, 18, 42, "06/2028", 51945, 0, 2, "Residencial", "Bairro Alto", "Em construção"], ["Turin", "GT Building", -25.440421, -49.278265, 31.58, 71.81, 692920, 21360, 37, 135, "04/2027", 70152, 0, 1, "Residencial", "Batel", "Em construção"], ["Loom Stay", "Tricon", -25.429842, -49.276706, 25.32, 90.04, 399000, 15758, 32, 128, "08/2028", 78839, 0, 1, "Residencial", "Centro", "Em construção"], ["Bosque Hype Casa Nativa", "Hype", -25.420954, -49.281001, 24.17, 85.09, 389142, 15981, 8, 41, "09/2028", 68369, 0, 1, "Residencial", "São Francisco", "Em construção"], ["A. Andersen - Residencial", "GT Building", -25.44413, -49.284301, 27.54, 34.54, 633410, 23000, 13, 197, "09/2029", 82916, 0, 1, "Residencial", "Batel", "Lançamento"], ["Hauer 4You", "Pride", -25.470492, -49.250068, 24.32, 44.86, 277000, 11390, 187, 480, "05/2030", 82216, 0, 1, "Residencial", "Hauer", "Lançamento"], ["Condomínio Colinas do Norte", "Treèle", -25.355536, -49.234001, 45.19, 48.06, 367001, 7636, 3, 160, "Pronto", 23404, 0, 2, "Residencial", "Santa Cândida", "Pronto novo"], ["Serra Dourada", "Treèle", -25.401321, -49.211728, 51.11, 51.15, 508490, 9949, 10, 98, "12/2026", 48338, 0, 2, "Residencial", "Bairro Alto", "Em construção"], ["Lange", "GT Building", -25.440421, -49.278265, 25, 93, 638900, 24812, 47, 273, "04/2027", 56756, 0, 1, "Residencial", "Batel", "Em construção"], ["Joy Living", "Piacentini Construtora", -25.427438, -49.26751, 21.06, 34.8, 360359, 17111, 32, 156, "05/2027", 59402, 0, 1, "Residencial", "Centro", "Em construção"], ["Core Palácio", "Gadens", -25.434296, -49.268189, 22.46, 53.8, 376408, 16524, 97, 429, "08/2028", 69898, 0, 1, "Residencial", "Centro", "Em construção"], ["Aruá", "Engearch", -25.38899, -49.211406, 26.83, 63.68, 259000, 9653, 109, 132, "12/2029", 83074, 0, 1, "Residencial", "Tingui", "Lançamento"], ["Core Faivre", "Gadens", -25.432625, -49.259704, 18.88, 37.51, 320408, 16971, 13, 238, "05/2027", 57124, 0, 1, "Residencial", "Centro", "Em construção"], ["Morá Refúgio Urbano", "Gadens", -25.434328, -49.267717, 19.43, 51.4, 346825, 17850, 21, 240, "Pronto", 42424, 0, 1, "Residencial", "Centro", "Pronto novo"], ["Lunetto - Residencial", "Pride", -25.462436, -49.289906, 26.4, 26.4, 436100, 16519, 1, 175, "Pronto", 29716, 0, 1, "Residencial", "Água Verde", "Pronto novo"], ["Saint Augustine Studios", "Jota2F Construtora", -25.400626, -49.244065, 18.09, 41.64, 280000, 6724, 9, 30, "Pronto", 80197, 0, 1, "Residencial", "Bacacheri", "Pronto novo"], ["Sierra Nevada", "GSerra Empreendimentos", -25.382549, -49.237077, 25.02, 47.62, 305376, 12094, 42, 56, "05/2030", 85086, 0, 1, "Residencial", "Boa Vista", "Lançamento"], ["Idea Studi Inteligenti", "Coral Engenharia", -25.385825, -49.233809, 28.42, 35.5, 328176, 11487, 81, 255, "Pronto", 62131, 0, 1, "Residencial", "Boa Vista", "Pronto novo"], ["Âmbar", "RPLK", -25.461556, -49.282538, 20.23, 61.6, 281790, 13929, 31, 54, "12/2028", 78968, 0, 1, "Residencial", "Água Verde", "Lançamento"], ["Lens Alto da Glória", "Gadens", -25.42911, -49.260498, 20.72, 33.03, 358191, 17287, 153, 163, "06/2029", 85187, 0, 1, "Residencial", "Alto da Glória", "Lançamento"], ["Oxygen", "O3 Empreendimentos", -25.44129, -49.28172, 30.35, 30.35, 635000, 20923, 1, 64, "Pronto", 36360, 0, 1, "Residencial", "Batel", "Pronto novo"], ["Core Silva Jardim", "Gadens", -25.440737, -49.271329, 18.75, 55.49, 333330, 17778, 6, 241, "09/2028", 73019, 0, 1, "Residencial", "Rebouças", "Em construção"], ["Ares Juvevê", "Gadens", -25.417701, -49.253842, 55.48, 157.87, 807186, 14411, 10, 73, "Pronto", 30718, 0, 2, "Residencial", "Juvevê", "Pronto novo"], ["Ace Água Verde", "Winner Incorporações", -25.467339, -49.287428, 23.93, 67.7, 258013, 10150, 64, 91, "10/2028", 86571, 0, 1, "Residencial", "Água Verde", "Lançamento"], ["Audace", "Pride", -25.446407, -49.269671, 28.98, 177.44, 283400, 9779, 45, 83, "12/2026", 40095, 0, 1, "Residencial", "Centro", "Em construção"], ["Studio Park II", "Sanches Construtora", -25.474341, -49.275677, 27.89, 27.89, 272150, 9758, 1, 24, "Pronto", 70640, 0, 1, "Residencial", "Guaíra", "Pronto novo"], ["Chrona", "Bonah Incorporadora", -25.460663, -49.289076, 32.54, 57.97, 489000, 14211, 15, 31, "12/2027", 84734, 0, 1, "Residencial", "Água Verde", "Lançamento"], ["Zait", "Pride", -25.431929, -49.282924, 31.03, 109.25, 421200, 12287, 56, 68, "07/2027", 52284, 0, 1, "Residencial", "Mercês", "Em construção"], ["Vibra Residence", "Morada Nova", -25.460396, -49.280174, 25.37, 47.75, 287397, 11328, 33, 77, "07/2028", 85852, 0, 1, "Residencial", "Água Verde", "Em construção"], ["Lume", "Z15", -25.424466, -49.276066, 25.84, 50.35, 322050, 12372, 7, 22, "08/2029", 82275, 0, 1, "Residencial", "São Francisco", "Lançamento"], ["Maceió", "Z15", -25.463057, -49.207115, 19.68, 19.68, 199000, 10112, 8, 26, "12/2026", 82123, 0, 1, "Residencial", "Cajuru", "Em construção"], ["Napoli", "Spazio Construtora", -25.472752, -49.285941, 18.86, 43.15, 216000, 11453, 26, 58, "12/2027", 80194, 0, 1, "Residencial", "Portão", "Em construção"], ["Zurich", "Alcance Engenharia", -25.398347, -49.237413, 23.43, 27.43, 268384, 11455, 32, 53, "09/2027", 71657, 0, 1, "Residencial", "Bacacheri", "Em construção"], ["Montreal", "Alcance Engenharia", -25.434174, -49.2384, 20.39, 51.85, 272869, 13382, 34, 37, "04/2029", 81212, 0, 1, "Residencial", "Cristo Rei", "Em construção"], ["New England", "Alcance Engenharia", -25.480822, -49.288393, 21.95, 22.4, 275300, 12290, 7, 57, "Pronto", 61035, 0, 1, "Residencial", "Novo Mundo", "Pronto novo"], ["One House", "Basesul", -25.48163, -49.289143, 28.77, 35.23, 347900, 11817, 9, 194, "Pronto", 16647, 0, 1, "Residencial", "Novo Mundo", "Pronto novo"], ["Aveon", "Calure", -25.427483, -49.242941, 38.31, 52.31, 351729, 9181, 3, 17, "Pronto", 74616, 0, 1, "Residencial", "Alto da XV", "Pronto novo"], ["Nilo", "FWD Incorporadora", -25.413077, -49.273926, 16.53, 16.53, 225000, 13612, 2, 36, "Pronto", 80198, 0, 1, "Residencial", "Bom Retiro", "Pronto novo"], ["Alles Blau Studios", "Ardc Empreendimentos", -25.423636, -49.275671, 29.6, 34.5, 324900, 10965, 22, 32, "01/2028", 83396, 0, 1, "Residencial", "São Francisco", "Em construção"], ["Plural", "Construtora Pessoa", -25.4493, -49.278261, 30.19, 86.89, 452548, 14990, 10, 46, "Pronto", 35038, 0, 1, "Residencial", "Água Verde", "Pronto novo"], ["Windy City", "Girassol Incorporações", -25.453958, -49.269746, 24.45, 71.7, 279000, 9820, 25, 48, "01/2028", 83668, 0, 1, "Residencial", "Rebouças", "Em construção"], ["Sollaris Residencial", "Coral Engenharia", -25.383545, -49.22729, 56.98, 59.19, 574802, 10088, 2, 42, "Pronto", 28948, 0, 2, "Residencial", "Tingui", "Pronto novo"], ["Casa Moá - Breve Lançamento", "Luibi Incorporadora", -25.41533, -49.272894, 25, 123, null, null, 1, 0, "10/2029", 84686, 0, 1, "Residencial", "Centro Cívico", "Lançamento"], ["Olea", "Engsa", -25.392259, -49.235551, 22.81, 69.8, 264140, 11580, 33, 42, "04/2029", 85924, 0, 1, "Residencial", "Bacacheri", "Lançamento"], ["AOI Tatemono", "RPLK", -25.44696, -49.285504, 24.29, 42.84, 362700, 13865, 3, 36, "Pronto", 72366, 0, 1, "Residencial", "Água Verde", "Pronto novo"], ["Tibó - Residencial", "ImobCon Construtora", -25.434325, -49.253122, 20.51, 34.18, 284295, 13807, 58, 127, "12/2028", 38615, 0, 1, "Residencial", "Cristo Rei", "Em construção"], ["Veev - Breve Lançamento", "Deo Empreendimentos", -25.432445, -49.282287, 35, 42, null, null, 1, 0, "11/2029", 86210, 0, 1, "Residencial", "Centro", "Lançamento"], ["Compass Coliving", "Jal Empreendimentos", -25.431921, -49.278393, 16.66, 33.7, 299000, 17947, 9, 161, "Pronto", 65877, 0, 1, "Residencial", "Centro", "Pronto novo"], ["Novo Prado Araucária", "Blue", -25.461492, -49.254784, 45.68, 56.37, 448434, 9621, 44, 176, "12/2027", 57358, 0, 2, "Residencial", "Prado Velho", "Em construção"], ["Platea 19", "108 Incorporações", -25.425559, -49.27015, 24.38, 52.27, 349721, 14345, 14, 112, "05/2028", 74356, 0, 1, "Residencial", "Centro", "Em construção"], ["Elevato Andaluz", "Tenda PR", -25.460339, -49.254079, 34.68, 34.93, 320700, 9247, 132, 414, "08/2029", 84229, 0, 2, "Residencial", "Prado Velho", "Lançamento"], ["UpHill 467", "Cumaru", -25.421805, -49.266576, 25.9, 73.3, 256410, 9900, 35, 56, "09/2028", 81160, 0, 1, "Residencial", "Centro Cívico", "Em construção"], ["Mont Syrah", "APTO Empreendimentos", -25.44097, -49.270336, 28.03, 97.94, 366822, 13087, 59, 272, "12/2027", 65599, 0, 1, "Residencial", "Rebouças", "Em construção"], ["MontVerde", "MontVerde LTDA", -25.422513, -49.261099, 57.77, 113.72, 691135, 11964, 37, 68, "06/2028", 66882, 0, 2, "Residencial", "Alto da Glória", "Em construção"], ["Sense 1910", "Benvecon", -25.478251, -49.282974, 18.62, 40.79, 207500, 10858, 22, 46, "08/2027", 67931, 0, 1, "Residencial", "Lindóia", "Em construção"], ["Nillo", "Tricon", -25.414935, -49.273561, 52.16, 69.25, 649000, 11412, 5, 26, "Pronto", 49912, 0, 2, "Residencial", "Bom Retiro", "Pronto novo"], ["Rocca", "Auten", -25.390951, -49.239292, 29.75, 133.68, 305401, 10266, 66, 107, "12/2028", 80019, 0, 1, "Residencial", "Boa Vista", "Em construção"], ["Atmos", "ATR Incorporadora PR", -25.436973, -49.268602, 23.69, 28.53, 481037, 20306, 2, 326, "09/2028", 62200, 0, 1, "Residencial", "Centro", "Em construção"], ["Bioos Home", "Laguna", -25.416367, -49.26152, 40.33, 75.9, 1020604, 25306, 15, 108, "Pronto", 22691, 0, 1, "Residencial", "Alto da Glória", "Pronto novo"], ["FR Studio", "Arbo Empreendimentos", -25.486519, -49.247714, 22, 37.1, 228790, 10400, 9, 50, "04/2027", 76896, 0, 1, "Residencial", "Hauer", "Em construção"], ["Mônaco Residence", "Arbo Empreendimentos", -25.460816, -49.285797, 24.66, 24.69, 279250, 11324, 4, 27, "06/2027", 76897, 0, 1, "Residencial", "Água Verde", "Em construção"], ["Emiliano 724", "D.Borcath", -25.437336, -49.278141, 15.45, 31.85, 260400, 16854, 159, 508, "06/2030", 84628, 0, 1, "Residencial", "Centro", "Lançamento"], ["Republik", "D.Borcath", -25.430265, -49.264512, 19.14, 27.34, 260000, 13584, 2, 179, "04/2027", 58320, 0, 1, "Residencial", "Centro", "Em construção"], ["Ville Vert", "KLW", -25.462771, -49.288229, 28.39, 88.07, 320000, 11272, 22, 28, "11/2026", 64058, 0, 1, "Residencial", "Água Verde", "Em construção"], ["Tekoá", "Coral Engenharia", -25.423249, -49.273899, 27, 49, 351371, 12928, 42, 71, "Pronto", 66296, 0, 1, "Residencial", "São Francisco", "Pronto novo"], ["Aya - Residencial", "Blue", -25.434299, -49.274751, 23.37, 54.54, 404362, 16779, 46, 533, "10/2027", 51859, 0, 1, "Residencial", "Centro", "Em construção"], ["Aya Carlos de Carvalho - Residencial", "Blue", -25.431901, -49.277629, 24.28, 54.04, 385821, 15160, 279, 882, "11/2029", 63588, 0, 1, "Residencial", "Centro", "Em construção"], ["Hall Design", "Víncere", -25.416945, -49.269926, 15.8, 62.89, 258152, 16339, 13, 114, "Pronto", 42556, 0, 1, "Residencial", "Centro Cívico", "Pronto novo"], ["Apus", "Maya Incorporadora", -25.458703, -49.282358, 45.86, 146.79, 734834, 15015, 13, 30, "03/2028", 76014, 0, 1, "Residencial", "Água Verde", "Em construção"], ["Visconti 2150", "Expanse Incorporadora", -25.434285, -49.262862, 22.12, 51.2, 289942, 13108, 43, 68, "12/2029", 86315, 0, 1, "Residencial", "Centro", "Lançamento"], ["Sieg Arenna", "Welt Empreendimentos", -25.449724, -49.277747, 19.11, 31.82, 444715, 15111, 13, 46, "12/2027", 69261, 0, 1, "Residencial", "Água Verde", "Em construção"], ["O2 Concept Mercês", "O2 Incorporadora", -25.426122, -49.282619, 24.48, 35, 372886, 15232, 10, 56, "08/2027", 73388, 0, 1, "Residencial", "Mercês", "Em construção"], ["Piazza di Roma", "Alô Incorp", -25.45855, -49.287119, 29.53, 127.35, 369593, 10861, 44, 87, "12/2028", 61185, 1, 1, "Residencial", "Água Verde", "Em construção"], ["MUV Residence", "Alô Incorp", -25.437473, -49.271133, 20.45, 36.91, 319719, 15634, 20, 334, "Pronto", 23240, 1, 1, "Residencial", "Centro", "Pronto novo"], ["Fresta Hype Living", "Hype", -25.435134, -49.269249, 23.86, 48.36, 355778, 14750, 153, 766, "12/2030", 72207, 0, 1, "Residencial", "Centro", "Em construção"], ["Théros Residencial", "Hartmann Incorporações", -25.429708, -49.251481, 19.4, 59.51, 282270, 14550, 27, 45, "09/2028", 81821, 0, 1, "Residencial", "Alto da XV", "Lançamento"], ["Aretha", "Deborah Bassoli Empreendimentos", -25.444117, -49.26081, 25.53, 36.57, 342100, 13400, 33, 98, "Pronto", 54393, 0, 1, "Residencial", "Rebouças", "Pronto novo"], ["Manhattan Square", "Manhattan Empreendimentos Imobiliários", -25.423334, -49.256781, 24.83, 60.66, 355500, 14283, 23, 100, "12/2026", 44526, 0, 1, "Residencial", "Alto da XV", "Em construção"], ["Edifício Moretti Apto 1606", "Hype Dações", -25.429755, -49.288702, 53.05, 53.05, 570000, 10745, 1, 1, "Pronto", 86525, 0, 2, "Residencial", "Bigorrilho", "Pronto novo"], ["Quintal do Paiol", "Reus Construtora", -25.447329, -49.257216, 22.49, 22.77, 249500, 11094, 27, 52, "02/2028", 77172, 0, 1, "Residencial", "Rebouças", "Em construção"], ["Torre Ferrara", "JCD Empreendimentos", -25.376929, -49.226512, 54.45, 57.94, 501538, 9030, 11, 134, "Pronto", 64409, 0, 2, "Residencial", "Santa Cândida", "Pronto novo"], ["Lee Dama Tower I", "Sanches Construtora", -25.456058, -49.287212, 18.81, 31.6, 304990, 14914, 18, 154, "07/2029", 82504, 0, 1, "Residencial", "Água Verde", "Lançamento"], ["Ebano Tower", "Poseidon Construções", -25.430532, -49.274461, 21, 21, 221605, 10553, 69, 122, "07/2029", 82318, 0, 1, "Residencial", "Centro", "Em construção"], ["Sensia Jardim Botânico - Fase 1", "Sensia Incorporadora PR", -25.433794, -49.235259, 41, 99.65, 479990, 11707, 128, 128, "05/2030", 82068, 0, 1, "Residencial", "Jardim Social", "Lançamento"], ["Atto", "RA Empreendimentos", -25.407671, -49.265252, 27.59, 97.16, 504857, 14462, 11, 49, "12/2027", 70359, 0, 1, "Residencial", "Ahú", "Em construção"], ["B41", "ALTMA PR", -25.449133, -49.253458, 30.51, 30.51, 704529, 23092, 1, 183, "07/2027", 55779, 0, 1, "Residencial", "Prado Velho", "Em construção"], ["Moní", "AGL", -25.419489, -49.264323, 26.87, 91.78, 416479, 15134, 14, 123, "11/2026", 50112, 0, 1, "Residencial", "Alto da Glória", "Em construção"], ["Ethan", "Thal Engenharia", -25.405392, -49.258583, 19.67, 39.51, 231000, 11744, 26, 31, "07/2027", 83090, 0, 1, "Residencial", "Ahú", "Lançamento"], ["Château de Vermont - Fase 2", "MRV PR", -25.47486, -49.271376, 58.27, 58.27, 402990, 6916, 2, 80, "02/2027", 58839, 0, 1, "Residencial", "Lindóia", "Em construção"], ["Elos Novo Prado", "Blue", -25.462379, -49.252457, 33.63, 33.98, 354111, 10530, 84, 214, "04/2029", 75838, 0, 2, "Residencial", "Prado Velho", "Em construção"], ["Blossom Urban Habitat", "Hype", -25.387956, -49.22643, 57.86, 71.75, 558608, 9654, 2, 49, "11/2027", 49332, 0, 2, "Residencial", "Bacacheri", "Em construção"], ["Suiça Flats Atílio Bório", "Suiça Flats Incorporações", -25.431338, -49.252823, 22.26, 70.95, 269904, 12125, 13, 59, "09/2027", 68275, 0, 1, "Residencial", "Cristo Rei", "Em construção"], ["Suíça Smart Campo Sales", "Suiça Flats Incorporações", -25.414371, -49.261233, 18.05, 32.6, 275530, 14750, 28, 70, "07/2028", 80674, 0, 1, "Residencial", "Alto da Glória", "Em construção"], ["Suiça Flats Fernando Amaro", "Suiça Flats Incorporações", -25.428162, -49.257731, 22.57, 22.57, 325000, 14400, 1, 59, "07/2027", 68276, 0, 1, "Residencial", "Alto da Rua XV", "Em construção"], ["Refinatto", "Poseidon Construções", -25.435605, -49.268105, 22.99, 29.46, 320000, 13919, 9, 67, "Pronto", 57517, 0, 1, "Residencial", "Centro", "Pronto novo"], ["New Life 19", "Fontanive PR", -25.425503, -49.269475, 23.81, 53.32, 286962, 12052, 57, 130, "02/2029", 80637, 0, 1, "Residencial", "Centro", "Em construção"], ["Elos Prudente", "Concrezatto Construtora", -25.424684, -49.285269, 20.83, 56.74, 350900, 16702, 9, 53, "12/2027", 67878, 0, 1, "Residencial", "Mercês", "Em construção"], ["Zion Jardim Botânico", "Martelli", -25.436581, -49.237886, 25.52, 71.95, 321528, 12599, 55, 184, "12/2029", 78368, 0, 1, "Residencial", "Cristo Rei", "Em construção"], ["Civitas - Studios", "Blue", -25.419699, -49.267591, 20.37, 45.09, 320810, 15749, 20, 130, "07/2028", 70845, 0, 1, "Residencial", "Centro Cívico", "Em construção"], ["Cena Passeio", "Blue", -25.42687, -49.267171, 21.14, 63, 323712, 15269, 46, 264, "03/2030", 81870, 0, 1, "Residencial", "Centro", "Lançamento"], ["Aya Amintas - Residencial", "Blue", -25.426715, -49.263413, 23.84, 50.52, 382025, 14970, 116, 489, "03/2030", 73318, 0, 1, "Residencial", "Centro", "Em construção"], ["Zion Santos Andrade", "Martelli", -25.429292, -49.266527, 20.28, 31.17, 330271, 15986, 37, 284, "06/2030", 82448, 0, 1, "Residencial", "Centro", "Lançamento"], ["Zion José Loureiro", "Martelli", -25.43086, -49.264838, 24.91, 25.05, 299000, 11936, 7, 98, "Pronto", 51546, 0, 1, "Residencial", "Centro", "Pronto novo"], ["Residencial VG", "Martelli", -25.434209, -49.262561, 46.74, 54.26, 599000, 12816, 8, 128, "Pronto", 28790, 0, 2, "Residencial", "Centro", "Pronto novo"], ["Montreal", "Martelli", -25.391448, -49.23689, 26.02, 66.65, 324265, 12462, 37, 63, "12/2027", 60203, 0, 1, "Residencial", "Bacacheri", "Em construção"], ["Tramontto", "Calure", -25.381728, -49.221371, 56.09, 126.92, 485311, 8652, 24, 37, "12/2028", 74615, 0, 2, "Residencial", "Tingui", "Em construção"], ["Sensia Horizon - Residencial", "Sensia Incorporadora PR", -25.388323, -49.237141, 58.89, 72.65, 565990, 9611, 36, 248, "04/2028", 49331, 0, 1, "Residencial", "Boa Vista", "Em construção"], ["Casa Trajano", "Stabilité", -25.422821, -49.274082, 25.63, 41.04, 295000, 11510, 11, 65, "Pronto", 7379, 0, 1, "Residencial", "São Francisco", "Pronto novo"], ["Athos Cabral", "Laporte Inc.", -25.400664, -49.250982, 24.6, 30.77, 258000, 10488, 6, 38, "01/2028", 86167, 0, 1, "Residencial", "Cabral", "Lançamento"], ["Cosmo Hype Living", "Hype", -25.428108, -49.254914, 26.23, 70.97, 421452, 15904, 38, 128, "07/2029", 69234, 0, 1, "Residencial", "Alto da Rua XV", "Em construção"], ["Qoya Residence Curio Collection by Hilton", "Piemonte PR", -25.442561, -49.278714, 46.64, 166.25, 1028340, 22048, 38, 127, "11/2027", 52020, 0, 1, "Residencial", "Batel", "Em construção"], ["Ilúnia", "Tuo Empreendimentos", -25.433271, -49.256041, 24.8, 70.63, 344205, 13879, 98, 215, "07/2030", 83626, 0, 1, "Residencial", "Centro", "Lançamento"], ["Tissot", "BCR Empreendimento", -25.451401, -49.272335, 28.84, 82.64, 389057, 13490, 15, 45, "03/2027", 85406, 0, 1, "Residencial", "Água Verde", "Lançamento"], ["Studio 01 - Residencial", "Pacific", -25.451523, -49.252981, 18.01, 29.73, 331776, 18422, 5, 104, "Pronto", 69844, 0, 1, "Residencial", "Prado Velho", "Pronto novo"], ["Cabral 635", "RC2 Construtora", -25.400707, -49.249033, 24, 74.79, 300000, 12500, 3, 20, "Pronto", 60615, 0, 1, "Residencial", "Cabral", "Pronto novo"], ["Curí 1615", "Zelta", -25.421557, -49.241788, 33.18, 83.62, 495709, 14940, 19, 41, "Pronto", 74409, 0, 1, "Residencial", "Juvevê", "Pronto novo"], ["TBG - Residencial", "TBG Studios", -25.431469, -49.275529, 18.85, 32.5, 279000, 14801, 24, 56, "Pronto", 80289, 0, 1, "Residencial", "Centro", "Pronto novo"], ["Ícone 1269", "Zelta", -25.419499, -49.245846, 31.38, 32.08, 500747, 15707, 7, 39, "Pronto", 74366, 0, 1, "Residencial", "Hugo Lange", "Pronto novo"], ["Join Juvevê", "MAX", -25.414668, -49.264226, 19.61, 28.33, 241920, 12337, 23, 33, "12/2027", 82354, 0, 1, "Residencial", "Juvevê", "Lançamento"], ["Log!", "Porto Camargo", -25.427055, -49.269817, 24.62, 24.62, 349800, 14208, 1, 146, "Pronto", 13539, 0, 1, "Residencial", "Centro", "Pronto novo"], ["Natune", "Tuo Empreendimentos", -25.448335, -49.22761, 34.8, 59.6, 372679, 10709, 25, 221, "11/2027", 72362, 0, 1, "Residencial", "Cajuru", "Em construção"], ["Wave", "Damiani", -25.451704, -49.275407, 19.1, 101.56, 357161, 18700, 24, 160, "12/2028", 70360, 0, 1, "Residencial", "Água Verde", "Em construção"], ["Niagara On The Lake", "Arvale", -25.422948, -49.258543, 59.8, 65.42, 713780, 11565, 4, 40, "Pronto", 28220, 0, 2, "Residencial", "Alto da Glória", "Pronto novo"], ["Connect XV", "Endeal Engenharia", -25.432729, -49.256318, 28.23, 46.97, 319569, 10989, 23, 93, "12/2026", 56489, 0, 1, "Residencial", "Centro", "Em construção"], ["Vidal Art Haus - Breve Lançamento", "Welt Empreendimentos", -25.403734, -49.259069, 34, 96, null, null, 69, 69, "02/2030", 86078, 0, 1, "Residencial", "Ahú", "Lançamento"], ["Terraz Juvevê", "JCAV Incorporadora", -25.414444, -49.257787, 26.92, 76.45, 369615, 13730, 46, 61, "01/2029", 85994, 0, 1, "Residencial", "Juvevê", "Lançamento"], ["My Place Jardim Botânico by Helbor - Fase 2", "Helbor PR", -25.438994, -49.236845, 33.68, 74.6, 385500, 11446, 5, 155, "09/2026", 55411, 0, 1, "Residencial", "Cristo Rei", "Em construção"], ["My Place Jardim Botânico by Helbor - Fase 1", "Helbor PR", -25.438994, -49.236845, 37.42, 37.42, 430000, 11491, 2, 146, "Pronto", 30409, 0, 1, "Residencial", "Cristo Rei", "Pronto novo"], ["Mavie", "Coral Engenharia", -25.383259, -49.238158, 56.36, 77.77, 545879, 9686, 49, 64, "09/2028", 79265, 0, 2, "Residencial", "Boa Vista", "Em construção"], ["Manhattan Wall Street", "Manhattan Empreendimentos Imobiliários", -25.423933, -49.25992, 15.58, 30.55, 235000, 15083, 132, 136, "12/2029", 80979, 0, 1, "Residencial", "Alto da Glória", "Em construção"], ["AN Metropolitan - Residencial", "Anton Incorporações", -25.434725, -49.27473, 23.45, 30.3, 346973, 14796, 94, 216, "06/2029", 58540, 0, 1, "Residencial", "Centro", "Em construção"], ["Liv 27.50", "Interage Imóveis", -25.390207, -49.224645, 22.13, 27.26, 210000, 9489, 22, 49, "07/2028", 84230, 0, 1, "Residencial", "Bacacheri", "Lançamento"], ["Maruã", "Proa Empreendimentos", -25.380755, -49.227033, 19.98, 35.24, 213986, 10710, 39, 123, "12/2027", 72484, 0, 1, "Residencial", "Boa Vista", "Em construção"], ["Auma", "Thal Engenharia", -25.399447, -49.247167, 42.3, 205.96, 549900, 13000, 31, 35, "12/2027", 79650, 0, 1, "Residencial", "Boa Vista", "Em construção"], ["La Dolce Vista", "Thal Engenharia", -25.380704, -49.223347, 45.87, 97.69, 405000, 8829, 14, 28, "12/2027", 63515, 0, 2, "Residencial", "Tingui", "Em construção"], ["Avena - Breve Lançamento", "Axar Incorporadora", -25.456382, -49.253332, 21.88, 26.11, null, null, 25, 25, "12/2029", 80229, 0, 1, "Residencial", "Prado Velho", "Lançamento"], ["Residencial Tom Jobim Apto 1401B", "Reus Construtora Dações", -25.488978, -49.226956, 59, 59, 519000, 8797, 1, 1, "Pronto", 76695, 0, 2, "Residencial", "Uberaba", "Pronto novo"]]
+};
+const P={};
+for(const k in D)P[k]=D[k].map(r=>({n:r[0],dev:r[1],lat:r[2],lng:r[3],minA:r[4],maxA:r[5],price:r[6],m2:r[7],stock:r[8],units:r[9],deliv:r[10],id:r[11],alo:!!r[12],minB:r[13]??1,fin:r[14]||"Residencial",bairro:r[15]||"",stage:r[16]||""}));
+const brl=v=>v==null?"sob consulta":"R$ "+(v>=1e6?(v/1e6).toFixed(2).replace(".",",")+" mi":Math.round(v/1e3)+" mil");
+const fmt=v=>v.toLocaleString("pt-BR",{maximumFractionDigits:0});
+const med=a=>{a=a.filter(x=>x!=null).sort((x,y)=>x-y);if(!a.length)return null;const m=a.length>>1;return a.length%2?a[m]:(a[m-1]+a[m])/2};
+let cur="av",sel=null;
+try{const h=location.hash.slice(1);const map={"agua-verde":"av",xaxim:"xa",fazenda:"fr",compactos:"cw"};if(map[h])cur=map[h]}catch(e){}
+const onlyCut=document.getElementById("onlyCut");
+function tabs(){
+ const el=document.getElementById("tabs");el.innerHTML="";
+ for(const k in T){const b=document.createElement("button");b.className="tab";b.setAttribute("role","tab");b.id="tab-"+k;
+  b.style.setProperty("--c",`var(${T[k].c})`);b.setAttribute("aria-selected",k===cur);
+  b.innerHTML=`<i></i>${T[k].name}`;b.onclick=()=>{cur=k;sel=null;render()};el.appendChild(b)}
+}
+function rose(){return `<svg class="rose" viewBox="0 0 92 92" aria-hidden="true"><circle cx="46" cy="46" r="40" fill="none" stroke="var(--line)" stroke-width="1.5"/><polygon points="46,8 53,46 46,40 39,46" fill="var(--c)"/><polygon points="46,84 53,46 46,52 39,46" fill="var(--off)"/><polygon points="8,46 46,39 40,46 46,53" fill="var(--off)"/><polygon points="84,46 46,39 52,46 46,53" fill="var(--off)"/><circle cx="46" cy="46" r="3.5" fill="var(--surface)" stroke="var(--c)" stroke-width="1.5"/></svg>`}
+function left(){
+ const t=T[cur],all=P[cur],cut=all.filter(t.cut);
+ const el=document.getElementById("left");el.style.setProperty("--c",`var(${t.c})`);
+ const stock=cut.reduce((s,b)=>s+b.stock,0);
+ const pm=med(cut.map(b=>b.price)),mm=med(cut.map(b=>b.m2));
+ el.innerHTML=`<p class="eyebrow">Bússola do território</p><h2>${t.name}</h2><p class="lead">${t.lead}</p>
+ <div class="compass">
+  <div class="pt n"><b>N · Para quem</b><span>${t.N}</span></div>
+  <div class="pt"><b>O · Mensagem</b><span>${t.O}</span></div>
+  ${rose()}
+  <div class="pt"><b>L · Produto</b><span>${t.L}</span></div>
+  <div class="pt s"><b>S · Preço</b><span>${t.S}</span></div>
+ </div>
+ <div class="stats">
+  <div class="stat"><strong>${cut.length}</strong><small>empreendimentos no recorte (Órulo)</small></div>
+  <div class="stat"><strong>${cut.length?fmt(stock):"0"}</strong><small>unidades em estoque</small></div>
+  <div class="stat"><strong>${pm?brl(pm):"—"}</strong><small>entrada mediana${mm?" · R$ "+fmt(mm)+"/m²":""}</small></div>
+ </div>
+ <div class="note">${t.note}</div>`;
+}
+function right(){
+ const t=T[cur];const box=document.getElementById("right");box.style.setProperty("--c",`var(${t.c})`);
+ document.getElementById("mapTitle").textContent=t.name;
+ const all=P[cur];const sf=document.getElementById("stageF").value;document.getElementById("stageWrap").hidden=cur!=="cw";const shown=(onlyCut.checked?all.filter(t.cut):all).filter(b=>cur!=="cw"||!sf||b.stage===sf);
+ const base=all.length?all:[];
+ const lats=base.map(b=>b.lat),lngs=base.map(b=>b.lng);
+ let la0=Math.min(...lats),la1=Math.max(...lats),lo0=Math.min(...lngs),lo1=Math.max(...lngs);
+ const k=Math.cos(((la0+la1)/2)*Math.PI/180);
+ let w=(lo1-lo0)*k,h=(la1-la0);const W=640,H=380,pad=40;
+ const s=Math.min((W-2*pad)/(w||1e-3),(H-2*pad)/(h||1e-3));
+ const ox=(W-w*s)/2,oy=(H-h*s)/2;
+ const X=lng=>ox+(lng-lo0)*k*s,Y=lat=>oy+(la1-lat)*s;
+ // escala: metros por unidade
+ const mPerUnit=111320/s; let len=[100,200,500,1000,2000,5000,10000].find(m=>m/mPerUnit>70)||10000; const px=len/mPerUnit;
+ const svg=document.getElementById("map");
+ let g=`<defs><pattern id="gr" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="var(--line)" stroke-width="1"/></pattern></defs><rect width="${W}" height="${H}" fill="url(#gr)"/>`;
+ g+=`<g transform="translate(${W-44},40)"><polygon points="0,-18 6,4 0,0 -6,4" fill="var(--c)"/><text y="20" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--muted)">N</text></g>`;
+ g+=`<g transform="translate(20,${H-22})"><rect width="${px}" height="4" fill="var(--muted)"/><text y="-6" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--muted)">${len>=1000?len/1000+" km":len+" m"}</text></g>`;
+ const order=[...shown].sort((a,b)=>b.stock-a.stock);
+ for(const b of order){const i=all.indexOf(b);const on=t.cut(b);const r=Math.max(5,Math.min(15,3+Math.sqrt(b.stock)*1.3));
+  const fill=b.alo?"var(--alo)":on?"var(--c)":"var(--surface)";const st=on||b.alo?"var(--surface)":"var(--off)";
+  g+=`<circle data-i="${i}" tabindex="0" cx="${X(b.lng).toFixed(1)}" cy="${Y(b.lat).toFixed(1)}" r="${r.toFixed(1)}" fill="${fill}" fill-opacity="${on||b.alo?0.88:1}" stroke="${st}" stroke-width="${sel===i?3:1.5}" style="cursor:pointer"><title>${b.n}</title></circle>`;
+  if(b.alo||sel===i)g+=`<text x="${(X(b.lng)+r+5).toFixed(1)}" y="${(Y(b.lat)+4).toFixed(1)}" font-family="Sora,sans-serif" font-size="12" font-weight="600" fill="var(--ink)">${b.n}</text>`;
+ }
+ if(!shown.length)g+=`<text x="${W/2}" y="${H/2}" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="15" fill="var(--muted)">Nenhum condomínio de lotes deste território está na Órulo.</text><text x="${W/2}" y="${H/2+22}" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="13" fill="var(--muted)">Desmarque “Só o recorte Alô” para ver o que existe.</text>`;
+ svg.innerHTML=g;
+ svg.querySelectorAll("circle[data-i]").forEach(c=>{const f=()=>{sel=+c.dataset.i;right()};c.onclick=f;c.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();f()}}});
+ document.getElementById("legend").innerHTML=`<span><i class="dot" style="background:var(--c)"></i>No recorte Alô</span><span><i class="dot" style="background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--off)"></i>Fora do recorte</span><span><i class="dot" style="background:var(--alo)"></i>Carteira Alô</span><span>Tamanho do ponto = unidades em estoque</span>`;
+ const rows=document.getElementById("rows");rows.innerHTML="";
+ const list=[...shown].sort((a,b)=>(b.alo-a.alo)||((a.price??9e9)-(b.price??9e9)));
+ for(const b of list){const i=all.indexOf(b);const tr=document.createElement("tr");tr.className="row"+(t.cut(b)||b.alo?"":" out")+(sel===i?" on":"");tr.tabIndex=0;
+  tr.innerHTML=`<td>${b.n}${b.alo?'<span class="tag">Alô</span>':""}<span class="dev">${b.dev}${b.bairro?" · "+b.bairro:""}${b.stage?" · "+b.stage:""}</span></td><td class="num">${b.minA===b.maxA?fmt(b.minA):fmt(b.minA)+"–"+fmt(b.maxA)}</td><td class="num">${brl(b.price)}</td><td class="num">${b.m2?fmt(b.m2):"—"}</td><td class="num">${b.stock}/${b.units}</td><td>${b.deliv}</td>`;
+  const f=()=>{sel=i;right()};tr.onclick=f;tr.onkeydown=e=>{if(e.key==="Enter"){f()}};rows.appendChild(tr)}
+ const d=document.getElementById("detail");
+ if(sel!=null&&all[sel]){const b=all[sel];d.innerHTML=`<strong>${b.n}</strong> · ${b.dev}${b.bairro?" · "+b.bairro:""}${b.stage?" · "+b.stage:""}<br>${b.minA===b.maxA?fmt(b.minA):fmt(b.minA)+" a "+fmt(b.maxA)} m² · a partir de ${brl(b.price)} · ${b.stock} de ${b.units} unidades disponíveis · entrega ${b.deliv}<br><a href="https://www.orulo.com.br/buildings/${b.id}" target="_blank" rel="noopener">Abrir na Órulo</a> · <a href="https://www.google.com/maps/search/?api=1&query=${b.lat},${b.lng}" target="_blank" rel="noopener">Ver no Google Maps</a>`}
+ else d.textContent="Toque num ponto ou numa linha da lista para ver o empreendimento.";
+}
+function render(){tabs();left();right()}
+onlyCut.onchange=()=>{sel=null;right()};document.getElementById("stageF").onchange=()=>{sel=null;right()};
+render();
+</script>
+
+</body>
+</html>
